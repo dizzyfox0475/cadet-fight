@@ -126,12 +126,12 @@ const CH = {
     lp3: { name: '잽 3타', kind: 'melee', su: 7, ac: 4, re: 22, dmg: 60, step: 6, reach: 100, hy: 104, hs: 20, push: 9, stop: 7, pose: 'punch', art: 'light3' },
     clp: { name: '정강이 차기', kind: 'melee', low: true, su: 4, ac: 3, re: 10, dmg: 30, reach: 90, hy: 20, hh: 40, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'kick', art: 'clight' },
     chp: { name: '다리 걸기', kind: 'melee', low: true, su: 8, ac: 5, re: 18, dmg: 60, reach: 130, hy: 14, hh: 36, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'kick', art: 'cheavy' },
-    jlp: { name: '점프 킥', kind: 'melee', air: true, su: 4, ac: 7, re: 6, dmg: 35, reach: 80, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
-    jhp: { name: '내려 펀치', kind: 'melee', air: true, dive: 13, diveX: 7, counter: true, su: 5, ac: 10, re: 10, dmg: 60, reach: 62, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'punch', art: 'jheavy' },
+    jlp: { name: '점프 킥', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 80, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
+    jhp: { name: '내려 펀치', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 5, ac: 10, re: 10, dmg: 60, reach: 62, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'punch', art: 'jheavy' },
     hp:  { name: '앞차기', kind: 'melee', su: 7, ac: 4, re: 11, dmg: 90, step: 6, reach: 100, hy: 95, hh: 70, hs: 22, push: 8, stop: 7, pose: 'kick' },
     sp1: { name: '1303 국방헬프콜', kind: 'proj', su: 14, re: 22, pose: 'call',
            proj: { text: '1303 국방헬프콜', size: 22, vx: 7, hy: 138, dmg: 90, lvl: 'high', unblock: true, hs: 24, push: 6, stop: 7, fill: '#ffffff', edge: '#c8392a' } },
-    sp2: { name: '들이받기', kind: 'rush', su: 8, ac: 14, re: 20, speed: 10, hits: 1, dmg: 60, reach: 52, hy: 85, hs: 22, push: 9, stop: 7, pose: 'tackle' },
+    sp2: { name: '잡기', kind: 'grab', su: 5, ac: 3, re: 28, dmg: 70, reach: 62, hy: 75, hh: 110, hs: 48, push: 2, stop: 8, pose: 'tackle' },   // close range, beats guard; whiff = long recovery
     su:  { name: '상담관 소환', kind: 'super', su: 10, re: 30, pose: 'callUp' }
   }},
   s4: { name: '공사 4학년', body: '#24406c', trim: '#e9c04f', skin: '#e9bf98', hair: '#121214', cap: true, sword: true, moves: {
@@ -140,11 +140,11 @@ const CH = {
     lp3: { name: '찌르기 3타', kind: 'melee', su: 8, ac: 4, re: 24, dmg: 50, step: 5, reach: 155, hy: 103, hs: 20, push: 9, stop: 7, pose: 'thrust', art: 'light3' },
     clp: { name: '하단 찌르기', kind: 'melee', low: true, su: 5, ac: 3, re: 11, dmg: 25, reach: 145, hy: 55, hh: 50, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'thrust', art: 'clight' },
     chp: { name: '하단 베기', kind: 'melee', low: true, su: 9, ac: 5, re: 20, dmg: 55, reach: 150, hy: 25, hh: 40, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'slash', art: 'cheavy' },
-    jlp: { name: '점프 베기', kind: 'melee', air: true, su: 5, ac: 7, re: 6, dmg: 30, reach: 115, hy: 50, hh: 90, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'slash', art: 'jlight' },
-    jhp: { name: '내려베기', kind: 'melee', air: true, dive: 13, diveX: 7, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 120, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
+    jlp: { name: '점프 베기', kind: 'melee', air: true, landLag: 8, su: 5, ac: 7, re: 6, dmg: 30, reach: 115, hy: 50, hh: 90, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'slash', art: 'jlight' },
+    jhp: { name: '내려베기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 120, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
     hp:  { name: '예도 베기', kind: 'melee', su: 11, ac: 6, re: 18, dmg: 70, reach: 135, hy: 90, hs: 22, push: 8, stop: 7, pose: 'slash' },
-    sp1: { name: '전달', kind: 'shout', su: 20, re: 25, cd: 480, radius: 300, stun: 60, dmg: 20, pose: 'shout' },
-    sp2: { name: '벌점 부과', kind: 'proj', su: 12, re: 18, pose: 'throw',
+    sp2: { name: '전달', kind: 'shout', su: 20, re: 25, cd: 480, radius: 300, stun: 60, dmg: 20, pose: 'shout', art: 'sp1' },
+    sp1: { name: '벌점 부과', kind: 'proj', su: 12, re: 18, pose: 'throw', art: 'sp2',
            proj: { text: '-2점', size: 28, vx: 9, hy: 72, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5, drain: 25, fill: '#ff4d3d', edge: '#ffffff' } },
     su:  { name: '예도 돌격', kind: 'rush', su: 10, ac: 20, re: 26, speed: 13, hits: 3, every: 6, dmg: 50, reach: 140, hy: 96, hs: 26, push: 2, lastPush: 10, stop: 6, pose: 'lunge' }
   }}
@@ -331,7 +331,7 @@ function dummyInput(f, o, mode) {
   const n = { ...NONE, noAuto: mode === 'stand' };   // the standing practice dummy takes hits instead of auto-guarding
   const away = o.x > f.x ? 'l' : 'r';
   if (mode === 'guard') n[away] = true;
-  if (mode === 'crouch') { n[away] = true; n.d = true; }
+  if (mode === 'crouch') n.d = true;   // no direction held: auto-guard while crouching, so the dummy doesn't crawl away
   return n;
 }
 
@@ -423,6 +423,9 @@ function control(f, o) {
   } else if (f.st === 'stun') {
     if (f.ground) f.vx *= 0.8;
     if (--f.stun <= 0) { f.st = 'idle'; f.t = 0; }
+  } else if (f.st === 'land') {
+    f.vx *= 0.6;
+    if (f.t >= f.lock) { f.st = 'idle'; f.t = 0; }
   } else if (f.st === 'dash') {
     f.vx = (f.dashDir > 0 ? 11 : -9) * f.face;
     const i = f.inp;
@@ -451,7 +454,8 @@ function free(f, i) {
   if (i.su && f.gauge >= 100) return start(f, 'su');
   if (i.sp) { const k = fw ? 'sp2' : 'sp1'; if (canUse(f, k)) return start(f, k); }
   if (!f.ground) {
-    if ((i.hp || i.lp) && !f.airUsed) { f.airUsed = true; return start(f, i.hp ? 'jhp' : 'jlp'); }
+    if ((i.hp || i.lp) && !f.airUsed) { f.airUsed = true; const k = i.hp ? 'jhp' : 'jlp'; f.airMove = f.c.moves[k]; return start(f, k); }
+    if (fw || bk) f.vx += ((fw ? 4.2 : -4.2) * f.face - f.vx) * 0.2;   // air control: steer while jumping
     return;
   }
   if (i.hp) return start(f, i.d ? 'chp' : 'hp');
@@ -463,7 +467,7 @@ function free(f, i) {
     f.st = 'jump'; f.t = 0; f.ground = false; f.vy = -15 * Math.sqrt(K); f.vx = (fw ? 4.2 : bk ? -4.2 : 0) * f.face; f.crouch = false;
     squash(f, 0.82, 1.2); return;
   }
-  if (i.d) { if (f.st !== 'crouch') { f.st = 'crouch'; f.t = 0; } f.crouch = true; f.vx = 0; return; }
+  if (i.d) { if (f.st !== 'crouch') { f.st = 'crouch'; f.t = 0; } f.crouch = true; f.vx = (fw ? 1.8 : bk ? -1.5 : 0) * f.face; return; }   // crouch-walk
   f.crouch = false;
   if (fw || bk) { if (f.st !== 'walk') { f.st = 'walk'; f.t = 0; } f.vx = (fw ? 4 : -3.2) * f.face; }
   else { if (f.st !== 'idle') { f.st = 'idle'; f.t = 0; } f.vx = 0; }
@@ -525,8 +529,12 @@ function physics(f) {
     if (!f.ground) {
       f.ground = true; f.vy = 0;
       if (f.st !== 'ko') {
-        if (f.st === 'jump' || f.st === 'attack') { f.st = 'idle'; f.t = 0; f.mv = null; f.mk = null; }
-        f.airUsed = false;
+        if (f.st === 'jump' || f.st === 'attack') {
+          if (f.airMove && (f.st === 'attack' || f.airUsed)) Object.assign(f, { st: 'land', t: 0, lock: f.airMove.landLag || 8, vx: 0 });   // air attack: short crouched recovery
+          else f.st = 'idle';
+          f.t = 0; f.mv = null; f.mk = null;
+        }
+        f.airUsed = false; f.airMove = null;
         squash(f, 1.2, 0.8);
       }
     }
@@ -545,16 +553,18 @@ function separate(a, b) {
 }
 
 function melee(f, o) {
-  if (f.st !== 'attack' || !f.mv || (f.mv.kind !== 'melee' && f.mv.kind !== 'rush')) return;
+  if (f.st !== 'attack' || !f.mv || !['melee', 'rush', 'grab'].includes(f.mv.kind)) return;
   const mv = f.mv;
   if (f.t < mv.su || f.t >= mv.su + mv.ac) return;
+  if (mv.kind === 'grab' && (!o.ground || ['hitstun', 'blockstun', 'stun', 'ko'].includes(o.st))) return;
   if (f.hits >= (mv.hits || 1) || f.t - f.lastHitT < (mv.every || 99)) return;
   const x1 = f.x + f.face * 18 * K, x2 = f.x + f.face * mv.reach * K, hy = f.y - mv.hy * K, hh = (mv.hh || 32) * K;
   if (overlap({ x: Math.min(x1, x2), y: hy - hh / 2, w: Math.abs(x2 - x1), h: hh }, hurt(o))) {
     f.hits++; f.lastHitT = f.t;
     if (mv.kind === 'rush') { f.rushStop = true; f.vx = 0; }
     const last = f.hits >= (mv.hits || 1);
-    tryHit(f, o, { dmg: mv.dmg, hs: mv.hs, push: last && mv.lastPush ? mv.lastPush : mv.push, stop: mv.stop, lvl: mv.lvl || 'mid', counter: mv.counter, srcX: f.x, py: hy });
+    tryHit(f, o, { dmg: mv.dmg, hs: mv.hs, push: last && mv.lastPush ? mv.lastPush : mv.push, stop: mv.stop, lvl: mv.lvl || 'mid', counter: mv.counter, srcX: f.x, py: hy,
+                   grab: mv.kind === 'grab', unblock: mv.kind === 'grab' });
   }
 }
 
@@ -618,7 +628,8 @@ function tryHit(att, def, a) {
     freeze(Math.ceil((a.stop || 4) / 2));
     return;
   }
-  if (guardable && a.unblock) popup(def, '가드 불가', '#ff6a4d');
+  if (a.grab) popup(def, '잡기!', '#ff6a4d');
+  else if (guardable && a.unblock) popup(def, '가드 불가', '#ff6a4d');
   if (a.counter && def.crouch && def.ground) {
     a = { ...a, dmg: Math.round(a.dmg * 1.5), hs: (a.hs || 14) + 12, stop: (a.stop || 4) + 4 };
     popup(def, '카운터!', '#ff9b3d');
@@ -713,6 +724,7 @@ function spritePose(s) {
   if (!s.ground) return 'jump';
   if (s.crouch) return 'crouch';
   if (s.st === 'dash') return 'walk';
+  if (s.st === 'land') return 'crouch';
   if (s.st === 'walk') return sprite(s.key, 'walk2') && Math.floor(s.t / 10) % 2 ? 'walk2' : 'walk';  // alternate stride / legs-crossing frames
   return 'idle';
 }
@@ -728,6 +740,7 @@ function drawSprite(s, o) {
   if (s.st === 'ko' && pose !== 'ko') { ctx.translate(0, s.ground ? -20 : 0); ctx.rotate(-Math.min(1, s.t / 18) * Math.PI / 2); }
   let dy = 0;
   if (s.st === 'walk') dy = -Math.abs(Math.sin(s.t * 0.3)) * 3;
+  if (s.st === 'crouch' && Math.abs(s.vx) > 0.5) dy = -Math.abs(Math.sin(s.t * 0.25)) * 2;
   if (s.st === 'idle') ctx.scale(1, 1 + Math.sin(tick * 0.08) * 0.012);
   ctx.drawImage(img, -m.ax, -m.h + dy, m.w, m.h);
   ctx.restore();
