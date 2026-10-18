@@ -77,6 +77,7 @@ canvas{display:block;touch-action:none}
     <span id="status">혼자 연습</span>
     <button id="restart" class="primary" type="button" hidden>다시 하기</button>
     <button id="fullscreen" type="button">전체화면</button>
+    <button id="sound" type="button" aria-pressed="true">소리 켜짐</button>
     <button id="menu" type="button">메뉴</button>
   </div>
   <div class="main">
@@ -142,13 +143,91 @@ const CH = {
     jlp: { name: '점프 베기', kind: 'melee', air: true, su: 5, ac: 7, re: 6, dmg: 30, reach: 115, hy: 50, hh: 90, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'slash', art: 'jlight' },
     jhp: { name: '내려베기', kind: 'melee', air: true, dive: 13, diveX: 7, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 120, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
     hp:  { name: '예도 베기', kind: 'melee', su: 11, ac: 6, re: 18, dmg: 70, reach: 135, hy: 90, hs: 22, push: 8, stop: 7, pose: 'slash' },
-    sp1: { name: '집합 명령', kind: 'shout', su: 20, re: 25, cd: 480, radius: 300, stun: 60, dmg: 20, pose: 'shout' },
+    sp1: { name: '전달', kind: 'shout', su: 20, re: 25, cd: 480, radius: 300, stun: 60, dmg: 20, pose: 'shout' },
     sp2: { name: '벌점 부과', kind: 'proj', su: 12, re: 18, pose: 'throw',
            proj: { text: '-2점', size: 28, vx: 9, hy: 72, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5, drain: 25, fill: '#ff4d3d', edge: '#ffffff' } },
     su:  { name: '예도 돌격', kind: 'rush', su: 10, ac: 20, re: 26, speed: 13, hits: 3, every: 6, dmg: 50, reach: 140, hy: 96, hs: 26, push: 2, lastPush: 10, stop: 6, pose: 'lunge' }
   }}
 };
 const P_COL = ['#6fb3ff', '#ff7a6b'];
+
+// ---------- sound: synthesized 8-bit effects (no audio files) ----------
+// Sounds are chosen by watching what changed on screen, so an online guest (who only
+// receives state) hears the same thing as the host.
+const SFX = (() => {
+  let ac = null, master = null, on = true;
+  try { on = localStorage.getItem('cadet-fight-sound') !== 'off'; } catch (_) {}
+  const unlock = () => {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = 0.32; master.connect(ac.destination); } catch (_) { return; } }
+    if (ac.state === 'suspended') ac.resume().catch(() => {});
+  };
+  addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true);   // browsers need a gesture first
+  function tone(type, f0, f1, dur, vol = 0.5, delay = 0) {
+    const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function noise(dur, vol = 0.4, f0 = 2000, f1 = 600, delay = 0) {
+    const t = ac.currentTime + delay, n = Math.ceil(ac.sampleRate * dur), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 1.2;
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(bp); bp.connect(g); g.connect(master); src.start(t);
+  }
+  const BANK = {
+    swing:   () => noise(0.07, 0.25, 3500, 1500),
+    shoot:   () => tone('square', 600, 1300, 0.09, 0.22),
+    hitL:    () => { tone('square', 240, 90, 0.08, 0.35); noise(0.05, 0.3, 1800, 500); },
+    hitH:    () => { tone('square', 170, 45, 0.16, 0.45); noise(0.12, 0.45, 1200, 200); },
+    guard:   () => tone('triangle', 950, 700, 0.06, 0.35),
+    jump:    () => tone('sine', 280, 620, 0.11, 0.3),
+    dash:    () => noise(0.13, 0.3, 600, 3000),
+    shout:   () => { tone('sawtooth', 190, 170, 0.28, 0.3); tone('sawtooth', 285, 255, 0.28, 0.18); },
+    counter: () => { tone('square', 1320, 1320, 0.07, 0.25); tone('square', 1760, 1760, 0.12, 0.25, 0.07); },
+    super:   () => { tone('sawtooth', 180, 1400, 0.45, 0.3); tone('square', 360, 2200, 0.45, 0.12); },
+    ko:      () => { tone('square', 420, 55, 0.7, 0.45); noise(0.5, 0.35, 900, 120); },
+    fight:   () => { tone('square', 523, 523, 0.1, 0.25); tone('square', 784, 784, 0.18, 0.25, 0.11); }
+  };
+  return {
+    play(name) { if (!on || !ac || ac.state !== 'running' || !BANK[name]) return; try { BANK[name](); } catch (_) {} },
+    get on() { return on; },
+    toggle() { on = !on; try { localStorage.setItem('cadet-fight-sound', on ? 'on' : 'off'); } catch (_) {} unlock(); return on; }
+  };
+})();
+window.__sfx = SFX;   // test hook
+const soundBtn = document.getElementById('sound');
+function syncSoundBtn() { if (soundBtn) { soundBtn.textContent = SFX.on ? '소리 켜짐' : '소리 꺼짐'; soundBtn.setAttribute('aria-pressed', String(SFX.on)); } }
+if (soundBtn) soundBtn.addEventListener('click', () => { SFX.toggle(); syncSoundBtn(); });
+syncSoundBtn();
+const SND = { fx: new Map(), p: [{}, {}], flash: false, phase: '' };
+function watchSounds() {
+  for (const e of G.fx) {
+    if (e.t > 3) continue;
+    const sig = e.k + '|' + Math.round(e.x / 8) + '|' + Math.round(e.y / 8) + '|' + (e.text || '');
+    if (SND.fx.has(sig)) continue;
+    SND.fx.set(sig, tick);
+    if (e.k === 'spark') SFX.play(e.big ? 'hitH' : 'hitL');
+    else if (e.k === 'guard') SFX.play('guard');
+    else if (e.k === 'ring') SFX.play('shout');
+    else if (e.k === 'text' && e.text === '카운터!') SFX.play('counter');
+  }
+  for (const [k, t] of SND.fx) if (tick - t > 30) SND.fx.delete(k);
+  for (const f of G.p) {
+    const p = SND.p[f.i];
+    if (f.st === 'attack' && f.mk && f.mk !== 'su' && (p.mk !== f.mk || f.t < p.t)) SFX.play(f.mv && f.mv.kind === 'proj' ? 'shoot' : 'swing');
+    if (f.st === 'jump' && p.st && p.st !== 'jump' && p.st !== 'attack' && !f.ground) SFX.play('jump');
+    if (f.st === 'dash' && p.st !== 'dash') SFX.play('dash');
+    if (f.st === 'ko' && p.st && p.st !== 'ko') SFX.play('ko');
+    SND.p[f.i] = { st: f.st, mk: f.mk, t: f.t };
+  }
+  if (G.flash && !SND.flash) SFX.play('super');
+  SND.flash = !!G.flash;
+  if (G.phase === 'fight' && SND.phase === 'intro') SFX.play('fight');
+  SND.phase = G.phase;
+}
 const K = 1.5;   // character scale: art, hitboxes and reach all grow together
 
 // ---------- sprites (ChatGPT art, background removed; w/h/ax in game px, ax = hip anchor from left) ----------
@@ -412,7 +491,7 @@ function counselor(owner, tgt, x, mode) {
 
 function shout(f, o, r, a) {
   fx('ring', f.x, f.y - 90 * K, { life: a.big ? 40 : 24, r: a.big ? 620 : r });
-  G.fx.push({ k: 'text', x: f.x, y: f.y - 160, t: 0, life: 40, text: a.big ? '전체 점호!' : '집합!', color: '#f0b545', size: 30 });
+  G.fx.push({ k: 'text', x: f.x, y: f.y - 160, t: 0, life: 40, text: a.big ? '전체 점호!' : '전달!', color: '#f0b545', size: 30 });
   shake(a.big ? 10 : 5);
   if (Math.abs(o.x - f.x) <= r && o.st !== 'ko') {
     tryHit(f, o, { dmg: a.dmg, unblock: true, stun: a.stun, push: 2, stop: 6, srcX: f.x, lvl: 'mid', py: o.y - 100 * K });
@@ -947,6 +1026,7 @@ function drawFocusHint() {
 }
 
 function render() {
+  watchSounds();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
   ctx.save();
