@@ -162,34 +162,52 @@ const SFX = (() => {
     if (ac.state === 'suspended') ac.resume().catch(() => {});
   };
   addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true);   // browsers need a gesture first
-  function tone(type, f0, f1, dur, vol = 0.5, delay = 0) {
+  function tone(type, f0, f1, dur, vol = 0.5, delay = 0, lp = 0) {
     const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
     o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.006); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    let out = o;
+    if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; o.connect(f); out = f; }
+    out.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
   }
-  function noise(dur, vol = 0.4, f0 = 2000, f1 = 600, delay = 0) {
+  function noise(dur, vol = 0.4, f0 = 800, f1 = 200, delay = 0, type = 'lowpass') {
     const t = ac.currentTime + delay, n = Math.ceil(ac.sampleRate * dur), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
-    const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
-    src.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 1.2;
-    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+    const src = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = buf; fl.type = type; fl.Q.value = 0.8;
+    fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    src.connect(bp); bp.connect(g); g.connect(master); src.start(t);
+    src.connect(fl); fl.connect(g); g.connect(master); src.start(t);
+  }
+  // brass-like note: two detuned saws through a low-pass, with a slow swell
+  function brass(freq, at, dur, vol = 0.22) {
+    for (const det of [-6, 6]) {
+      const t = ac.currentTime + at, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+      o.type = 'sawtooth'; o.frequency.value = freq; o.detune.value = det;
+      f.type = 'lowpass'; f.frequency.setValueAtTime(700, t); f.frequency.linearRampToValueAtTime(1600, t + 0.08);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.03);
+      g.gain.setValueAtTime(vol, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+    }
   }
   const BANK = {
-    swing:   () => noise(0.07, 0.25, 3500, 1500),
-    shoot:   () => tone('square', 600, 1300, 0.09, 0.22),
-    hitL:    () => { tone('square', 240, 90, 0.08, 0.35); noise(0.05, 0.3, 1800, 500); },
-    hitH:    () => { tone('square', 170, 45, 0.16, 0.45); noise(0.12, 0.45, 1200, 200); },
-    guard:   () => tone('triangle', 950, 700, 0.06, 0.35),
-    jump:    () => tone('sine', 280, 620, 0.11, 0.3),
-    dash:    () => noise(0.13, 0.3, 600, 3000),
-    shout:   () => { tone('sawtooth', 190, 170, 0.28, 0.3); tone('sawtooth', 285, 255, 0.28, 0.18); },
-    counter: () => { tone('square', 1320, 1320, 0.07, 0.25); tone('square', 1760, 1760, 0.12, 0.25, 0.07); },
-    super:   () => { tone('sawtooth', 180, 1400, 0.45, 0.3); tone('square', 360, 2200, 0.45, 0.12); },
-    ko:      () => { tone('square', 420, 55, 0.7, 0.45); noise(0.5, 0.35, 900, 120); },
-    fight:   () => { tone('square', 523, 523, 0.1, 0.25); tone('square', 784, 784, 0.18, 0.25, 0.11); }
+    swing:   () => noise(0.1, 0.32, 900, 250),
+    shoot:   () => { tone('triangle', 320, 150, 0.12, 0.35); noise(0.08, 0.2, 700, 200); },
+    hitL:    () => { tone('sine', 150, 55, 0.13, 0.7); noise(0.08, 0.45, 700, 120); },
+    hitH:    () => { tone('sine', 115, 35, 0.24, 0.9); tone('triangle', 75, 30, 0.2, 0.5); noise(0.18, 0.6, 500, 70); },
+    guard:   () => { tone('triangle', 230, 160, 0.09, 0.5); noise(0.05, 0.35, 1100, 500); },
+    jump:    () => tone('sine', 150, 240, 0.1, 0.35),
+    dash:    () => noise(0.15, 0.38, 350, 900),
+    shout:   () => { tone('sawtooth', 110, 98, 0.32, 0.4, 0, 500); tone('sawtooth', 165, 147, 0.32, 0.25, 0, 500); },
+    counter: () => { tone('triangle', 330, 330, 0.08, 0.4); tone('triangle', 494, 494, 0.14, 0.4, 0.08); noise(0.08, 0.3, 600, 150); },
+    super:   () => { tone('sawtooth', 90, 520, 0.55, 0.4, 0, 700); tone('sine', 60, 45, 0.55, 0.5); },
+    ko:      () => { tone('sine', 170, 28, 0.95, 0.9); tone('triangle', 90, 25, 0.8, 0.5); noise(0.7, 0.5, 500, 50); },
+    fight:   () => { tone('triangle', 262, 262, 0.12, 0.4); tone('triangle', 392, 392, 0.22, 0.4, 0.13); },
+    fanfare: () => {   // 빰-빠-밤~ (G, G, then a held C major chord)
+      brass(392, 0, 0.14); brass(392, 0.17, 0.14);
+      for (const f of [523, 659, 784]) brass(f, 0.34, 1.1, 0.16);
+      tone('sine', 131, 131, 1.2, 0.35, 0.34);
+    }
   };
   return {
     play(name) { if (!on || !ac || ac.state !== 'running' || !BANK[name]) return; try { BANK[name](); } catch (_) {} },
@@ -226,6 +244,7 @@ function watchSounds() {
   if (G.flash && !SND.flash) SFX.play('super');
   SND.flash = !!G.flash;
   if (G.phase === 'fight' && SND.phase === 'intro') SFX.play('fight');
+  if (G.phase === 'match' && SND.phase && SND.phase !== 'match') SFX.play('fanfare');
   SND.phase = G.phase;
 }
 const K = 1.5;   // character scale: art, hitboxes and reach all grow together
@@ -309,7 +328,7 @@ function readInput(i) {
            pl: pressed.has(m.l), pr: pressed.has(m.r) };
 }
 function dummyInput(f, o, mode) {
-  const n = { ...NONE };
+  const n = { ...NONE, noAuto: mode === 'stand' };   // the standing practice dummy takes hits instead of auto-guarding
   const away = o.x > f.x ? 'l' : 'r';
   if (mode === 'guard') n[away] = true;
   if (mode === 'crouch') { n[away] = true; n.d = true; }
@@ -586,7 +605,7 @@ function tryHit(att, def, a) {
   if (def.st === 'ko') return;
   const dir = Math.sign(def.x - a.srcX) || att.face;
   const i = def.inp || NONE;
-  const away = dir > 0 ? i.r : i.l;
+  const away = (dir > 0 ? i.r : i.l) || (!i.l && !i.r && !i.noAuto && dir === -def.face);   // hold away, or stand still facing the attack
   const guardable = def.ground && ['idle', 'walk', 'crouch', 'blockstun'].includes(def.st) && away;
   let blocked = guardable && !a.unblock;
   if (blocked && a.lvl === 'overhead' && def.crouch) blocked = false;   // jump attacks: stand to block
