@@ -70,7 +70,7 @@ canvas{display:block;touch-action:none}
 #lobbyMsg strong{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.15em}
 .hint{color:var(--muted);font-size:12px;line-height:1.55;margin:0}
 
-#lobby .view[hidden],#select[hidden],#help[hidden]{display:none}
+#lobby .view[hidden],#select[hidden],#help[hidden],#botRow[hidden]{display:none}
 #help{position:absolute;left:8px;top:16%;max-width:min(330px,46%);max-height:70%;overflow:auto;background:rgba(255,255,255,.78);color:#111;
   border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.45;cursor:pointer}
 #help b{font-weight:700}
@@ -154,6 +154,7 @@ canvas{display:block;touch-action:none}
     <h1 style="font-size:24px">캐릭터 선택</h1>
     <div class="chars" id="chars"></div>
     <p id="selOpp"></p>
+    <div class="row" id="botRow" hidden></div>
     <div class="row"><button type="button" id="ready" class="primary big">준비 완료</button><button type="button" id="selLeave" class="big">나가기</button></div>
   </div>
 </div>
@@ -443,6 +444,64 @@ function dummyInput(f, o, mode) {
   const away = o.x > f.x ? 'l' : 'r';
   if (mode === 'guard') n[away] = true;
   if (mode === 'crouch') n.d = true;   // no direction held: auto-guard while crouching, so the dummy doesn't crawl away
+  if (mode === 'easy' || mode === 'hard') return botInput(f, o, BOT[mode]);
+  return n;
+}
+
+// ---------- practice bots (초급 / 상급) ----------
+// The bot re-thinks every `think` frames and holds that plan in between; `guard` is how often it blocks a threat it sees.
+const BOT = {
+  easy: { think: 14, guard: 0.25, punish: 0.15, aggro: 0.35, anti: 0.1, special: 0.04, chain: 0.3 },
+  hard: { think: 3, guard: 0.85, punish: 0.8, aggro: 0.6, anti: 0.6, special: 0.12, chain: 0.95 }
+};
+function botInput(f, o, B) {
+  const b = f.bot || (f.bot = { next: 0, hold: { ...NONE }, press: null, wantChain: false });
+  const n = { ...NONE }, now = b.clock = (b.clock || 0) + 1;   // own frame counter (called once per frame)
+  if (!f.ground && !f.airUsed && f.vy > 0 && Math.abs(o.x - f.x) < 150) { n.hp = Math.random() < 0.5; n.lp = !n.hp; return n; }
+  const toward = o.x > f.x ? 'r' : 'l', away = toward === 'r' ? 'l' : 'r';
+  const d = Math.abs(o.x - f.x), M = f.c.moves, R = k => (M[k] && M[k].reach ? M[k].reach * K : 0);
+  // keep the chain going: press 약 again while a light attack is out
+  if (f.st === 'attack') { if (b.wantChain && f.mv && f.mv.next && f.t === f.mv.su + 1) n.lp = true; return n; }   // committed: only keep the chain going
+  if (f.st === 'blockstun') { Object.assign(n, b.hold); return n; }   // keep holding the guard
+  if (now < b.next) { Object.assign(n, b.hold); return n; }
+  b.next = now + B.think; b.hold = { ...NONE }; b.wantChain = false;
+  const r = Math.random;
+  // 1) threat: an attack or a projectile coming at me
+  const oAtk = o.st === 'attack' && o.mv && f.t >= 0 && o.t < o.mv.su + (o.mv.ac || 1) && d < (o.mv.reach || 0) * K + 60;
+  const shot = G.proj.find(p => p.owner === o && !p.p.fall && (f.x - p.x) * p.dir > 0 && Math.abs(f.x - p.x) < 230);
+  const shell = G.proj.find(p => p.owner === o && p.p.fall && Math.abs(f.x - p.x) < 110);
+  if ((oAtk || shot || shell) && r() < B.guard) {
+    const q = shot ? shot.p : shell ? shell.p : o.mv;
+    const lvl = q.lvl || (q.low ? 'low' : 'mid');
+    if (shell) b.hold[away] = true;                                    // walk out of the blast
+    else if (q.unblock || q.grab) { if (lvl === 'high') b.hold.d = true; else b.hold.u = true; }   // can't block: duck the high one, jump the rest
+    else { b.hold[away] = true; if (lvl === 'low') b.hold.d = true; }   // block high/low correctly
+    Object.assign(n, b.hold); return n;
+  }
+  if (f.st !== 'idle' && f.st !== 'walk' && f.st !== 'crouch') return n;   // busy
+  // 2) anti-air: they jump in close
+  if (!o.ground && d < 170 && r() < B.anti) { n.hp = true; return n; }
+  // 3) punish: they are recovering or stunned within reach
+  const open = o.st === 'stun' || o.st === 'hitstun' || (o.st === 'attack' && o.mv && o.t >= o.mv.su + (o.mv.ac || 1)) || o.st === 'land';
+  if (open && d < Math.max(R('hp'), R('lp')) + 10 && r() < B.punish) { if (d < R('hp')) n.hp = true; else n.lp = true; b.wantChain = r() < B.chain; return n; }
+  // 4) super when it can reach
+  if (f.gauge >= 100 && r() < B.special * 2 && d < 420) { n.su = true; return n; }
+  // 5) in range: mix up
+  if (d < R('lp') + 8) {
+    if (r() < B.aggro) {
+      const x = r();
+      if (x < 0.45) { n.lp = true; b.wantChain = r() < B.chain; }
+      else if (x < 0.65) n.hp = true;
+      else if (x < 0.8) { n.d = true; n.lp = true; }
+      else if (x < 0.9) { n.d = true; n.hp = true; }
+      else { n[toward] = true; n.sp = true; }                              // 앞+특 (grab / AED / 긴빠이 …)
+    } else if (r() < 0.5) b.hold[away] = true;                          // back off a little (also guards)
+    return n;
+  }
+  // 6) mid range: specials, or close in
+  if (d < 420 && r() < B.special) { n.sp = true; return n; }
+  if (r() < B.aggro * 0.15 && d < 260) { b.hold.u = true; b.hold[toward] = true; b.jumpIn = true; Object.assign(n, b.hold); return n; }
+  b.hold[toward] = true; Object.assign(n, b.hold);
   return n;
 }
 
@@ -1720,13 +1779,13 @@ const lobbyEl = $('lobby'), lobbyMsg = $('lobbyMsg'), statusEl = $('status'), re
 const CHARS = { f1: true, s4: true, ka: true, na: true, nu: true };
 const other = k => (k === 'f1' ? 's4' : 'f1');
 const ID_PREFIX = 'cadet-fight-v1-';
-const SEL = { me: { char: 'f1', ready: false }, opp: { char: '', ready: false } };
+const SEL = { me: { char: 'f1', ready: false }, opp: { char: '', ready: false }, bot: 'stand', botChar: 's4' };
 try { const c = localStorage.getItem('cadet-fight-char'); if (CHARS[c]) SEL.me.char = c; } catch (_) {}
 
 function inputFor(i, f, o) {
   if (i === 0) return readLocal();
   if (NET.role === 'host') return remoteInput();
-  return dummyInput(f, o, 'stand');
+  return dummyInput(f, o, SEL.bot);
 }
 function remoteInput() {
   const h = NET.gin.h, c = NET.gin.c, e = c.map((v, k) => v > NET.gLast[k]);
@@ -1858,26 +1917,38 @@ for (const k of Object.keys(CHARS)) {
   img.onerror = () => { img.replaceWith(Object.assign(document.createElement('b'), { textContent: '그림 준비 중', style: 'height:min(22vh,120px);display:flex;align-items:center;color:var(--muted);font-weight:400;font-size:12px' })); };
   const sp = document.createElement('span'); sp.textContent = CH[k].name;
   b.append(img, sp); charsEl.append(b);
-  b.addEventListener('click', () => { if (SEL.me.ready) return; SEL.me.char = k; try { localStorage.setItem('cadet-fight-char', k); } catch (_) {} drawSelect(); sendPick(); });
+  b.addEventListener('click', () => { if (SEL.me.ready) return; SEL.me.char = k; try { localStorage.setItem('cadet-fight-char', k); } catch (_) {} if (SEL.botChar === k) rollBotChar(); drawSelect(); sendPick(); });
 }
+// practice opponent: 허수아비 / 초급 봇 / 상급 봇, and which character it plays (random each time it changes)
+const BOT_NAME = { stand: '허수아비', easy: '초급 봇', hard: '상급 봇' };
+const botRow = $('botRow');
+for (const k of Object.keys(BOT_NAME)) {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.b = k; b.textContent = BOT_NAME[k]; b.className = 'pick';
+  b.addEventListener('click', () => { SEL.bot = k; try { localStorage.setItem('cadet-fight-bot', k); } catch (_) {} drawSelect(); });
+  botRow.append(b);
+}
+try { const v = localStorage.getItem('cadet-fight-bot'); if (BOT_NAME[v]) SEL.bot = v; } catch (_) {}
+function rollBotChar() { const ks = Object.keys(CHARS).filter(k => k !== SEL.me.char); SEL.botChar = ks[Math.random() * ks.length | 0]; }
 function drawSelect() {
+  botRow.hidden = NET.role !== 'solo';
+  for (const b of botRow.children) b.setAttribute('aria-pressed', String(b.dataset.b === SEL.bot));
   for (const b of charsEl.children) { b.setAttribute('aria-pressed', String(b.dataset.c === SEL.me.char)); b.disabled = SEL.me.ready && b.dataset.c !== SEL.me.char; }
   $('ready').textContent = SEL.me.ready ? '준비 취소' : '준비 완료';
   let o;
-  if (NET.role === 'solo') o = '상대: 허수아비 (' + CH[other(SEL.me.char)].name + ')';
+  if (NET.role === 'solo') o = '상대: ' + BOT_NAME[SEL.bot] + ' (' + CH[SEL.botChar].name + ')';
   else if (!NET.opp) o = '상대를 기다리는 중…';
   else o = `상대: ${NET.opp.nick || '손님'}${NET.opp.nick && FB_ON ? ' · ' + rankText(NET.opp) : ''} — ${SEL.opp.ready ? CH[SEL.opp.char].name + ' 준비 완료' : '고르는 중…'}`;
   $('selOpp').textContent = o;
 }
 function openSelect() {
-  NET.stage = 'select'; helpEl.hidden = true; SEL.me.ready = false;
+  NET.stage = 'select'; helpEl.hidden = true; SEL.me.ready = false; rollBotChar();
   lobbyEl.hidden = true; selEl.hidden = false; drawSelect(); sendPick();
 }
 function closeSelect() { selEl.hidden = true; }
 function sendPick() { if (NET.role !== 'solo') send({ t: 'pick', char: SEL.me.char, ready: SEL.me.ready, prof: myProfile() }); }
 $('ready').addEventListener('click', () => {
   SEL.me.ready = !SEL.me.ready; drawSelect(); sendPick();
-  if (NET.role === 'solo' && SEL.me.ready) { PICK.p1 = SEL.me.char; PICK.p2 = other(SEL.me.char); startFight(); }
+  if (NET.role === 'solo' && SEL.me.ready) { PICK.p1 = SEL.me.char; PICK.p2 = SEL.botChar; startFight(); }
   else if (NET.role === 'host') maybeStart();
 });
 $('selLeave').addEventListener('click', () => { leaveRoom(); newMatch(); showLobby(''); setStatus('메뉴'); });
