@@ -202,7 +202,7 @@ const CH = {
     lp2: { name: '찔러 2타', kind: 'melee', su: 6, ac: 3, re: 11, dmg: 32, step: 3, reach: 115, hy: 106, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp3', art: 'light2' },
     lp3: { name: '베고 찔러', kind: 'melee', su: 8, ac: 5, re: 22, dmg: 55, step: 6, reach: 135, hy: 94, hs: 20, push: 9, stop: 7, pose: 'thrust', art: 'light3' },
     clp: { name: '낮게 찌르기', kind: 'melee', low: true, su: 5, ac: 3, re: 11, dmg: 28, reach: 100, hy: 60, hh: 50, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'thrust', art: 'clight' },
-    chp: { name: '수류탄 던지기', kind: 'proj', low: true, su: 10, re: 24, pose: 'throw', art: 'cheavy',   // low lob; bursts on the floor — jump over it, crouch to block
+    chp: { name: '수류탄 던지기', kind: 'proj', low: true, scd: 120, su: 10, re: 24, pose: 'throw', art: 'cheavy',   // low lob; bursts on the floor — jump over it, crouch to block
            proj: { shape: 'grenade', arc: true, w: 14, h: 18, vx: 7, vy: -8, grav: 0.55, mx: 55, hy: 58, radius: 55, dmg: 60, lvl: 'low', hs: 20, push: 7, stop: 6 } },
     jlp: { name: '점프 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 78, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '대검 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 90, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
@@ -223,7 +223,7 @@ const CH = {
     chp: { name: '로프 하단 휘두르기', kind: 'melee', low: true, su: 9, ac: 5, re: 18, dmg: 58, reach: 160, hy: 16, hh: 34, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'rope', art: 'cheavy' },
     jlp: { name: '중단 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 92, hy: 60, hh: 70, lvl: 'mid', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '닻 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 60, reach: 95, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
-    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 60, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 1초
+    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 120, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 2초
            proj: { shape: 'gull', w: 50, h: 40, vx: 7, mx: 100, hy: 112, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5 } },
     sp2: { name: '긴빠이', kind: 'melee', unblock: true, seal: 300, cd: 480, su: 22, ac: 4, re: 22, dmg: 10, reach: 95, hy: 90, hh: 90, hs: 18, push: 2, stop: 6, pose: 'punch' },   // slow, unblockable, a hit cancels it; seals 강·필 for 5 s
     su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 12, su: 14, ac: 26, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
@@ -560,7 +560,7 @@ function free(f, i) {
     if (fw || bk) f.vx += ((fw ? 4.2 : -4.2) * f.face - f.vx) * 0.2;   // air control: steer while jumping
     return;
   }
-  if (hp) return start(f, gunReady(f, i.d ? 'chp' : 'hp'));
+  if (hp) { const k = gunReady(f, i.d ? 'chp' : 'hp'); if (canUse(f, k)) return start(f, k); return; }
   if (i.lp) return start(f, i.d ? 'clp' : 'lp');
   const tapF = f.face > 0 ? i.pr : i.pl, tapB = f.face > 0 ? i.pl : i.pr;
   if (tapF) { if (tick - f.tapF < 14) return dash(f, 1); f.tapF = tick; }
@@ -1270,17 +1270,19 @@ function gaugeBar(f, x, y, w, rev) {
   const label = full ? '필살기 가능  ' + (f.i ? 'Num0' : 'I') : '필살 게이지';
   ctx.fillText(label, rev ? x + w : x, y - 8);
   // skills with a cooldown: a small bar above the super gauge that refills as the skill comes back
-  const cdMove = Object.values(f.c.moves).find(m => m.cd);
-  if (cdMove) {
-    const bw = w * 0.6, bx = rev ? x + w - bw : x, by = y - 34, ready = f.cd <= 0;
-    const pw = bw * (ready ? 1 : 1 - f.cd / cdMove.cd);
+  // long cooldown (f.cd) and short cooldown (f.scd) each get their own bar, stacked upward
+  const bars = [];
+  for (const m of Object.values(f.c.moves)) { if (m.cd) bars.push([m, m.cd, f.cd]); if (m.scd) bars.push([m, m.scd, f.scd || 0]); }
+  bars.forEach(([cdMove, full, left], n) => {
+    const bw = w * 0.6, bx = rev ? x + w - bw : x, by = y - 34 - n * 26, ready = left <= 0;
+    const pw = bw * (ready ? 1 : 1 - left / full);
     ctx.fillStyle = 'rgba(8,12,22,.85)'; rr(bx - 2, by - 2, bw + 4, 10, 3); ctx.fill();
     ctx.fillStyle = ready ? '#7fe3a0' : 'rgba(255,255,255,.35)';
     ctx.fillRect(rev ? bx + bw - pw : bx, by, pw, 6);
     ctx.font = `13px ${FONT}`; ctx.textAlign = rev ? 'right' : 'left';
     ctx.fillStyle = ready ? '#7fe3a0' : 'rgba(255,255,255,.6)';
-    ctx.fillText(cdMove.name + (ready ? '  준비' : '  ' + (f.cd / 60).toFixed(1) + '초'), rev ? x + w : x, by - 6);
-  }
+    ctx.fillText(cdMove.name + (ready ? '  준비' : '  ' + (left / 60).toFixed(1) + '초'), rev ? x + w : x, by - 6);
+  });
 }
 function banner(text, color, size = 72, y = 230) {
   ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
@@ -1688,7 +1690,7 @@ function snapshot() {
     ph: G.phase, bg: G.stage | 0, pt: G.pt, tm: G.timer, rd: G.round, w: G.winner, msg: G.msg, sh: r1(G.shake),
     fl: G.flash ? [G.flash.t, G.flash.name, G.flash.who.i] : 0,
     p: G.p.map(f => [f.key, r1(f.x), r1(f.y), f.face, f.st, f.t, f.mk || 0, +f.crouch, +f.ground, +f.guard, f.hp, Math.round(f.hpLag),
-                     Math.round(f.gauge), f.cd, r2(f.sx), r2(f.sy), f.stun, f.wins, Math.round(f.vx), f.seal | 0]),
+                     Math.round(f.gauge), f.cd, r2(f.sx), r2(f.sy), f.stun, f.wins, Math.round(f.vx), f.seal | 0, f.scd | 0]),
     pr: G.proj.map(p => [p.owner.i, projKey(p), r1(p.x), r1(p.y), p.dir, p.life]),
     su: G.sum.map(s => [r1(s.x), r1(s.y), s.face, s.st, s.t, r2(s.a)]),
     fx: G.fx.slice(-12).map(e => ({ ...e, x: r1(e.x), y: r1(e.y) }))
@@ -1703,7 +1705,7 @@ function applySnap(s) {
       const f = G && G.p && G.p[i] && G.p[i].key === key ? G.p[i] : fighter(i, key);
       Object.assign(f, { x: +a[1], y: +a[2], face: a[3] < 0 ? -1 : 1, st: String(a[4]), t: a[5] | 0, mk: f.c.moves[a[6]] ? a[6] : null,
         crouch: !!a[7], ground: !!a[8], guard: !!a[9], hp: +a[10], hpLag: +a[11], gauge: +a[12], cd: a[13] | 0,
-        sx: +a[14] || 1, sy: +a[15] || 1, stun: a[16] | 0, wins: a[17] | 0, vx: +a[18] || 0, seal: a[19] | 0 });
+        sx: +a[14] || 1, sy: +a[15] || 1, stun: a[16] | 0, wins: a[17] | 0, vx: +a[18] || 0, seal: a[19] | 0, scd: a[20] | 0 });
       f.mv = f.mk ? f.c.moves[f.mk] : null;
       return f;
     });
