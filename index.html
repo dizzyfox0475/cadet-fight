@@ -144,7 +144,7 @@ canvas{display:block;touch-action:none}
     <p class="label">계급 순위</p>
     <div class="board" id="board"><table><thead><tr><th>#</th><th>닉네임</th><th>계급</th><th class="r">전적</th></tr></thead><tbody id="boardBody"><tr><td colspan="4">불러오는 중…</td></tr></tbody></table></div>
     <div class="row" id="logoutRow" hidden><button type="button" id="logout">로그아웃</button></div>
-    <p class="hint">같은 계급끼리: 이기면 +8, 지면 −6. 계급이 다르면: 높은 쪽은 이겨도 +3·지면 −7, 낮은 쪽은 이기면 +10·지면 −5. 100점이면 승급전(3판 2승), 0점에서 2연패하면 강등. 같은 와이파이가 아니어도, 데이터로도 돼요.</p>
+    <p class="hint">같은 계급끼리: 이기면 +8, 지면 −6. 계급이 다르면: 높은 쪽은 이겨도 +3·지면 −7, 낮은 쪽은 이기면 +10·지면 −5. 30점이면 승급전(3판 2승), 0점에서 2연패하면 강등. 같은 와이파이가 아니어도, 데이터로도 돼요.</p>
   </div>
 </div>
 
@@ -176,16 +176,16 @@ const CH = {
     chp: { name: '다리 걸기', kind: 'melee', low: true, su: 8, ac: 5, re: 18, dmg: 60, reach: 130, hy: 14, hh: 36, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'kick', art: 'cheavy' },
     jlp: { name: '점프 킥', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 80, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '내려 펀치', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 5, ac: 10, re: 10, dmg: 60, reach: 62, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'punch', art: 'jheavy' },
-    hp:  { name: '앞차기', kind: 'melee', su: 7, ac: 4, re: 11, dmg: 90, step: 6, reach: 100, hy: 95, hh: 70, hs: 22, push: 8, stop: 7, pose: 'kick' },
+    hp:  { name: '앞차기', kind: 'melee', su: 7, ac: 4, re: 11, dmg: 75, step: 6, reach: 100, hy: 95, hh: 70, hs: 22, push: 8, stop: 7, pose: 'kick' },
     sp1: { name: '1303 국방헬프콜', kind: 'proj', cd: 180, su: 14, re: 22, pose: 'call',
-           proj: { text: '1303 국방헬프콜', size: 22, vx: 7, hy: 138, dmg: 90, lvl: 'high', unblock: true, hs: 24, push: 6, stop: 7, fill: '#ffffff', edge: '#c8392a' } },
+           proj: { text: '1303 국방헬프콜', size: 22, vx: 7, hy: 138, dmg: 70, lvl: 'high', unblock: true, hs: 24, push: 6, stop: 7, fill: '#ffffff', edge: '#c8392a' } },
     sp2: { name: '잡아 던지기', kind: 'grab', fling: true, su: 5, ac: 3, re: 28, dmg: 70, reach: 62, hy: 75, hh: 110, hs: 48, push: 2, stop: 8, pose: 'tackle' },   // close range, beats guard; throws far forward; whiff = long recovery
     su:  { name: '상담관 소환', kind: 'super', su: 10, re: 30, pose: 'callUp' }
   }},
   s4: { name: '공사 4학년', body: '#24406c', trim: '#e9c04f', skin: '#e9bf98', hair: '#121214', cap: true, sword: true, moves: {
-    lp:  { name: '예도 찌르기', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 28, reach: 140, hy: 100, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp2' },
-    lp2: { name: '찌르기 2타', kind: 'melee', su: 6, ac: 3, re: 11, dmg: 30, reach: 150, hy: 112, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp3', art: 'light2' },
-    lp3: { name: '찌르기 3타', kind: 'melee', su: 8, ac: 4, re: 24, dmg: 50, step: 5, reach: 155, hy: 103, hs: 20, push: 9, stop: 7, pose: 'thrust', art: 'light3' },
+    lp:  { name: '예도 찌르기', kind: 'melee', su: 5, ac: 3, re: 13, dmg: 28, reach: 120, hy: 100, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp2' },
+    lp2: { name: '찌르기 2타', kind: 'melee', su: 6, ac: 3, re: 14, dmg: 30, reach: 127, hy: 112, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp3', art: 'light2' },
+    lp3: { name: '찌르기 3타', kind: 'melee', su: 8, ac: 4, re: 27, dmg: 50, step: 5, reach: 133, hy: 103, hs: 20, push: 9, stop: 7, pose: 'thrust', art: 'light3' },
     clp: { name: '하단 찌르기', kind: 'melee', low: true, su: 5, ac: 3, re: 11, dmg: 25, reach: 145, hy: 55, hh: 50, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'thrust', art: 'clight' },
     chp: { name: '하단 베기', kind: 'melee', low: true, su: 9, ac: 5, re: 20, dmg: 55, reach: 150, hy: 25, hh: 40, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'slash', art: 'cheavy' },
     jlp: { name: '점프 베기', kind: 'melee', air: true, landLag: 8, su: 5, ac: 7, re: 6, dmg: 30, reach: 115, hy: 50, hh: 90, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'slash', art: 'jlight' },
@@ -212,7 +212,7 @@ const CH = {
     sp2: { name: '잡아 던지기', kind: 'grab', toss: true, su: 5, ac: 3, re: 28, dmg: 80, reach: 62, hy: 75, hh: 110, hs: 40, push: 2, stop: 8, pose: 'tackle' },   // grab, then throw over to the other side
     reload: { name: '재장전', kind: 'reload', quiet: true, su: 30, re: 4 },   // after 3점사, the next 3점사 press reloads; a hit or moving cancels it
     su:  { name: '포병 화력지원', kind: 'proj', gun: true, spg: true, burst: 3, every: 10, su: 12, ac: 22, re: 20, pose: 'aimUp',   // 3 shells, each aimed where the opponent is
-           proj: { shape: 'shell', fall: true, warn: 18, vy: 26, radius: 55, dmg: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
+           proj: { shape: 'shell', fall: true, warn: 18, vy: 26, radius: 55, dmg: 60, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
   }},
   na: { name: '해사 생도', body: '#e9edf2', trim: '#1d2b4a', skin: '#ecc29b', hair: '#141418', moves: {
     lp:  { name: '주먹 지르기', kind: 'melee', su: 4, ac: 3, re: 9, dmg: 35, step: 4, reach: 88, hy: 113, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp2' },
@@ -227,11 +227,11 @@ const CH = {
     ctr: { name: '닻 돌진 카운터', kind: 'rush', unblock: true, su: 3, ac: 12, re: 18, speed: 14, hits: 1, dmg: 90, reach: 120, hy: 95, hs: 26, push: 11, stop: 10, pose: 'punch', art: 'counter', art2: 'light' },   // fires only after a successful parry
     sp2: { name: '긴빠이', kind: 'melee', unblock: true, seal: 300, cd: 480, su: 22, ac: 4, re: 22, dmg: 10, reach: 95, hy: 90, hh: 90, hs: 18, push: 2, stop: 6, pose: 'punch' },   // slow, unblockable, a hit cancels it; seals 강·필 for 5 s
     su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 8, su: 14, ac: 18, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
-           proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 18, vy: 26, radius: 70, ff: true, dmg: 120, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
+           proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 18, vy: 26, radius: 70, ff: true, dmg: 90, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
   }},
   nu: { name: '간호사관 생도', body: '#2d4a7a', trim: '#e9edf2', skin: '#f0c9a6', hair: '#1a1416', moves: {
-    lp:  { name: '의료가방 휘두르기', kind: 'melee', su: 4, ac: 3, re: 9, dmg: 30, step: 3, reach: 108, hy: 95, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp2' },
-    lp2: { name: '가방 2타', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 30, step: 3, reach: 95, hy: 112, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp3', art: 'light2' },
+    lp:  { name: '의료가방 휘두르기', kind: 'melee', su: 4, ac: 3, re: 9, dmg: 30, step: 3, reach: 108, hy: 95, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp2', artA: 'light', art: 'light2' },
+    lp2: { name: '가방 2타', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 30, step: 3, reach: 108, hy: 95, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp3', artA: 'light', art: 'light2' },
     lp3: { name: '가방 내려치기', kind: 'melee', su: 8, ac: 4, re: 20, dmg: 50, step: 5, reach: 95, hy: 60, hh: 80, hs: 20, push: 9, stop: 7, pose: 'punch', art: 'light3' },
     hp:  { name: '붕대 채찍', kind: 'melee', su: 10, ac: 6, re: 17, dmg: 65, reach: 160, hy: 105, hh: 50, hs: 22, push: 7, stop: 7, pose: 'rope' },
     clp: { name: '낮게 걷어차기', kind: 'melee', low: true, su: 4, ac: 3, re: 10, dmg: 30, reach: 115, hy: 18, hh: 36, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'kick', art: 'clight' },
@@ -242,8 +242,8 @@ const CH = {
            proj: { shape: 'syringe', w: 40, h: 12, vx: 11, mx: 70, hy: 110, dmg: 20, poison: 50, lvl: 'mid', hs: 14, push: 3, stop: 4 } },
     csp: { name: '셀프 주사', kind: 'heal', low: true, scd: 240, heal: 50, su: 20, re: 10, pose: 'punch', art: 'csp', art2: 'crouch' },   // 앉아서 특: 3초에 걸쳐 50 회복, 맞으면 끊김
     sp2: { name: '제세동기', kind: 'melee', cd: 300, su: 10, ac: 4, re: 22, dmg: 40, stun: 90, reach: 95, hy: 75, hh: 70, hs: 20, push: 2, stop: 9, pose: 'punch' },   // 맞으면 1.5초 감전, 재사용 5초
-    su:  { name: '단체 예방접종', kind: 'proj', fan: [-0.32, -0.16, 0, 0.16, 0.32], su: 14, re: 24, pose: 'throw',   // 주사기 5개를 부채꼴로: 맞을 때마다 피해 10 + 독 30 (겹침)
-           proj: { shape: 'syringe', w: 40, h: 12, vx: 10, mx: 60, hy: 105, dmg: 10, poison: 30, lvl: 'mid', hs: 16, push: 3, stop: 4 } }
+    su:  { name: '단체 예방접종', kind: 'proj', fan: [-0.32, -0.16, 0, 0.16, 0.32], su: 14, re: 24, pose: 'throw',   // 주사기 5개를 부채꼴로: 맞을 때마다 피해 15 + 독 30 (겹침)
+           proj: { shape: 'syringe', w: 40, h: 12, vx: 10, mx: 60, hy: 105, dmg: 15, poison: 30, lvl: 'mid', hs: 16, push: 3, stop: 4 } }
   }}
 };
 // 벌점 부과: −1 / −2 / −3점 중 하나가 무작위로 날아감, 점수가 클수록 아픔
@@ -931,6 +931,7 @@ function spritePose(s) {
   if ((G.phase === 'end' || G.phase === 'match') && G.winner === s.i && s.ground) return 'win';
   if (s.st === 'blockstun' || s.guard) return s.crouch && s.ground ? 'cguard' : 'guard';
   if (s.st === 'attack' && mv) {
+    if (mv.artA && s.t < mv.su && sprite(s.key, mv.artA)) return mv.artA;   // wind-up picture before the swing picture
     if (mv.art) { if (sprite(s.key, mv.art)) return mv.art; if (mv.art2 && sprite(s.key, mv.art2)) return mv.art2; return mv.low ? 'crouch' : mv.air ? 'jump' : 'light'; }
     if ((s.mk === 'lp' || s.mk === 'hp') && s.t < mv.su) return 'idle';
     return { lp: 'light', hp: 'heavy', sp1: 'sp1', sp2: 'sp2', su: sprite(s.key, 'super') ? 'super' : 'light' }[s.mk];
@@ -1550,25 +1551,26 @@ const TOP = TIERS.length - 1;
 
 // One match result → my new record. opp only needs { tier }.
 // Same tier +8 / −6. Different tier: higher wins +3 / loses −7, lower wins +10 / loses −5.
-// 100 points → promotion series (best of 3, points frozen): 2 wins = next tier at 0, 2 losses = back to 90.
-// Losing twice in a row while at 0 points → previous tier at 90.
+// PROMO points → promotion series (best of 3, points frozen): 2 wins = next tier at 0, 2 losses = back to PROMO−10.
+// Losing twice in a row while at 0 points → previous tier at PROMO−10.
+const PROMO = 30, BACK = PROMO - 10;
 function rateMatch(me, opp, won) {
   const r = { ...me };
   if (won) r.wins = (r.wins || 0) + 1; else r.losses = (r.losses || 0) + 1;
   if (r.promo) {
     if (won) r.pw++; else r.pl++;
     if (r.pw >= 2) Object.assign(r, { tier: Math.min(TOP, r.tier + 1), pts: 0, promo: false, pw: 0, pl: 0, zl: 0 });
-    else if (r.pl >= 2) Object.assign(r, { pts: 90, promo: false, pw: 0, pl: 0 });
+    else if (r.pl >= 2) Object.assign(r, { pts: BACK, promo: false, pw: 0, pl: 0 });
     return r;
   }
   const d = me.tier === opp.tier ? (won ? 8 : -6) : me.tier > opp.tier ? (won ? 3 : -7) : (won ? 10 : -5);
   if (won) {
     r.zl = 0;
     r.pts += d;
-    if (r.pts >= 100 && r.tier < TOP) Object.assign(r, { pts: 100, promo: true, pw: 0, pl: 0 });
+    if (r.pts >= PROMO && r.tier < TOP) Object.assign(r, { pts: PROMO, promo: true, pw: 0, pl: 0 });
   } else if (me.pts <= 0) {
     r.zl = (r.zl || 0) + 1;
-    if (r.zl >= 2 && r.tier > 0) Object.assign(r, { tier: r.tier - 1, pts: 90, zl: 0 });
+    if (r.zl >= 2 && r.tier > 0) Object.assign(r, { tier: r.tier - 1, pts: BACK, zl: 0 });
   } else {
     r.pts = Math.max(0, r.pts + d);
     r.zl = 0;
@@ -1580,7 +1582,7 @@ function changeText(before, after) {
   if (after.tier > before.tier) return `${TIERS[after.tier]} 진급!`;
   if (after.tier < before.tier) return `${TIERS[after.tier]}(으)로 강등`;
   if (after.promo && !before.promo) return '승급전 시작! (3판 중 2승)';
-  if (before.promo && !after.promo) return '승급전 실패 · 90점';
+  if (before.promo && !after.promo) return `승급전 실패 · ${BACK}점`;
   if (after.promo) return `승급전 ${after.pw}승 ${after.pl}패`;
   const d = after.pts - before.pts;
   return `${TIERS[after.tier]} ${after.pts}점 (${d >= 0 ? '+' : ''}${d})` + (after.zl && after.tier > 0 ? ' · 0점에서 한 번 더 지면 강등' : '');
