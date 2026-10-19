@@ -72,7 +72,7 @@ canvas{display:block;touch-action:none}
 
 #lobby .view[hidden],#select[hidden],#help[hidden]{display:none}
 #help{position:absolute;left:8px;top:16%;max-width:min(330px,46%);max-height:70%;overflow:auto;background:rgba(255,255,255,.78);color:#111;
-  border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.45;pointer-events:none}
+  border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.45;cursor:pointer}
 #help b{font-weight:700}
 #help h3{margin:0 0 4px;font-size:13px}
 #help p{margin:0 0 6px}
@@ -108,7 +108,7 @@ canvas{display:block;touch-action:none}
     <span id="status">메뉴</span>
     <button id="restart" class="primary" type="button" hidden>다시 하기</button>
     <button id="fullscreen" type="button">전체화면</button>
-    <button id="helpBtn" type="button" aria-pressed="false">설명</button>
+    <button id="helpBtn" type="button" aria-pressed="false">설명 켜기</button>
     <button id="sound" type="button" aria-pressed="true">소리 켜짐</button>
     <button id="menu" type="button">메뉴</button>
   </div>
@@ -219,14 +219,12 @@ const CH = {
     lp2: { name: '주먹 2타', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 35, step: 3, reach: 84, hy: 113, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp3', art: 'light2' },
     lp3: { name: '로프 끌어오기', kind: 'melee', su: 9, ac: 4, re: 22, dmg: 45, reach: 165, hy: 100, hh: 40, hs: 24, push: 0, stop: 6, pose: 'rope', pull: true, art: 'light3' },   // reaches past 예도; a hit drags them in
     hp:  { name: '로프 휘두르기', kind: 'melee', su: 11, ac: 6, re: 18, dmg: 70, reach: 135, hy: 90, hh: 60, hs: 22, push: 8, stop: 7, pose: 'rope' },
-    fhp: { name: '갈매기 날리기', kind: 'proj', su: 12, re: 18, pose: 'throw', art: 'fheavy',
-           proj: { shape: 'gull', w: 36, h: 22, vx: 7, mx: 100, hy: 112, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5 } },
     clp: { name: '로우킥', kind: 'melee', low: true, su: 4, ac: 3, re: 10, dmg: 32, reach: 110, hy: 18, hh: 36, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'kick', art: 'clight' },
     chp: { name: '로프 하단 휘두르기', kind: 'melee', low: true, su: 9, ac: 5, re: 18, dmg: 58, reach: 160, hy: 16, hh: 34, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'rope', art: 'cheavy' },
     jlp: { name: '중단 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 92, hy: 60, hh: 70, lvl: 'mid', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '닻 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 60, reach: 95, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
-    sp1: { name: '닻 던지기', kind: 'proj', su: 14, re: 22, pose: 'throw',
-           proj: { shape: 'anchor', w: 30, h: 36, vx: 9, mx: 100, hy: 95, dmg: 70, lvl: 'mid', hs: 20, push: 8, stop: 7 } },
+    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 60, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 1초
+           proj: { shape: 'gull', w: 50, h: 40, vx: 7, mx: 100, hy: 112, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5 } },
     sp2: { name: '긴빠이', kind: 'melee', unblock: true, seal: 300, cd: 480, su: 22, ac: 4, re: 22, dmg: 10, reach: 95, hy: 90, hh: 90, hs: 18, push: 2, stop: 6, pose: 'punch' },   // slow, unblockable, a hit cancels it; seals 강·필 for 5 s
     su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 12, su: 14, ac: 26, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
            proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 34, vy: 18, radius: 70, ff: true, dmg: 120, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
@@ -368,6 +366,7 @@ const STAGES = ['room', 'parade', 'deck'].map(key => { const img = new Image(); 
 const jetImg = new Image(); jetImg.src = 'assets/s4_jet.webp';
 const missileImg = new Image(); missileImg.src = 'assets/s4_missile.webp';   // AIM-9 art (drawn shape until it exists)
 const shipImg = new Image(); shipImg.src = 'assets/na_ship.webp';
+const gullImg = new Image(); gullImg.src = 'assets/na_gull.webp';
 const pickStage = () => Math.random() * STAGES.length | 0;
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -446,7 +445,7 @@ function newMatch() {
 }
 function resetRound() {
   for (const f of G.p) Object.assign(f, { x: f.i ? 680 : 280, y: GROUND, vx: 0, vy: 0, face: f.i ? -1 : 1, hp: 1000, hpLag: 1000,
-    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false, ammo: true, seal: 0 });
+    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false, ammo: true, seal: 0, scd: 0 });
   Object.assign(G, { proj: [], sum: [], fx: [], phase: 'intro', pt: 0, timer: 99 * 60, flash: null, freeze: 0, shake: 0, stage: pickStage() });
 }
 document.getElementById('restart').addEventListener('click', () => restartMatch());
@@ -502,6 +501,7 @@ function step() {
     f.sx += (1 - f.sx) * 0.2; f.sy += (1 - f.sy) * 0.2;
     if (f.cd > 0) f.cd--;
     if (f.seal > 0) f.seal--;
+    if (f.scd > 0) f.scd--;
     recordTrail(f);
   }
   if (G.phase === 'fight' && --G.timer <= 0) { G.timer = 0; roundOver(); }
@@ -545,6 +545,7 @@ function gunReady(f, k) { return f.c.moves[k].mag && !f.ammo ? 'reload' : k; }
 function canUse(f, k) {
   const mv = f.c.moves[k];
   if (mv.cd && f.cd > 0) return false;
+  if (mv.scd && f.scd > 0) return false;
   if (mv.kind === 'proj') return !G.proj.some(p => p.owner === f);
   if (mv.kind === 'shout') return f.cd <= 0;
   return true;
@@ -559,7 +560,6 @@ function free(f, i) {
     if (fw || bk) f.vx += ((fw ? 4.2 : -4.2) * f.face - f.vx) * 0.2;   // air control: steer while jumping
     return;
   }
-  if (hp && fw && !i.d && f.c.moves.fhp) { if (canUse(f, 'fhp')) return start(f, 'fhp'); return; }   // 앞+강 (해사)
   if (hp) return start(f, gunReady(f, i.d ? 'chp' : 'hp'));
   if (i.lp) return start(f, i.d ? 'clp' : 'lp');
   const tapF = f.face > 0 ? i.pr : i.pl, tapB = f.face > 0 ? i.pl : i.pr;
@@ -586,6 +586,7 @@ function start(f, k) {
   if (f.ground) f.vx = 0;
   if (k === 'su') { f.gauge = 0; G.flash = { t: 42, name: mv.name, who: f }; }
   if (mv.cd) f.cd = mv.cd;
+  if (mv.scd) f.scd = mv.scd;
   if (mv.mag) f.ammo = false;
   squash(f, 0.9, 1.08);
 }
@@ -1138,6 +1139,8 @@ function drawProj(p) {
   if (q.shape === 'gull') {   // seagull
     const flap = Math.sin(p.life * 0.5) * 8;
     ctx.save(); ctx.translate(p.x, p.y); ctx.scale(p.dir, 1);
+    if (ready(gullImg)) { const w = 86, h = w * gullImg.naturalHeight / gullImg.naturalWidth; ctx.drawImage(gullImg, -w / 2, -h / 2 + flap * 0.4, w, h); ctx.restore(); return; }
+    ctx.scale(2, 2);
     ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = 2.5; ctx.fillStyle = '#f4f6f8';
     ctx.beginPath(); ctx.ellipse(0, 0, 14, 6, 0, 0, 7); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-2, -14 - flap, 10, -6 - flap); ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-12, -14 - flap, -22, -6 - flap); ctx.stroke();
@@ -1150,14 +1153,7 @@ function drawProj(p) {
     ctx.fillStyle = '#9aa2ab'; ctx.fillRect(-3, -10, 6, 5); ctx.strokeStyle = '#9aa2ab'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(5, -9, 3, 0, 7); ctx.stroke();
     ctx.restore(); return;
   }
-  if (q.shape === 'anchor') {
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 0.25 * p.dir);
-    ctx.strokeStyle = '#3d4450'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(0, 16); ctx.moveTo(-10, -10); ctx.lineTo(10, -10); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 6, 14, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, -22, 5, 0, 7); ctx.stroke();
-    ctx.restore(); return;
-  }
+
   if (q.shape === 'missile') {
     const ang = p.ang != null ? p.ang : (p.dir > 0 ? 0.6 : Math.PI - 0.6);
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
@@ -1624,7 +1620,7 @@ const QDOC = uid => `https://firestore.googleapis.com/v1/projects/${FB.projectId
 async function queuePut(sess, withUid = '') {
   const me = ACC.me, body = { fields: { nick: { stringValue: me.nick }, tier: { integerValue: String(me.tier) }, pts: { integerValue: String(me.pts) }, sess: { stringValue: sess }, with: { stringValue: withUid } } };
   const r = await fetch(QDOC(ACC.uid), { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() }, body: JSON.stringify(body) });
-  if (!r.ok) throw new Error('매칭 서버에 등록하지 못했어요.');
+  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(`매칭 서버에 등록하지 못했어요 (${r.status} ${(j.error && j.error.status) || ''})`); }   // 403 PERMISSION_DENIED = Firestore rules
   return Date.parse((await r.json()).updateTime);   // server clock, to judge who is still waiting
 }
 async function queueList() {
@@ -1847,10 +1843,9 @@ let helpWanted = null;   // null = automatic (shown only in practice)
 function fillHelp(key) {
   const m = CH[key].moves, n = k => (m[k] ? m[k].name : '');
   const rows = [['약 연타', [n('lp'), n('lp2'), n('lp3')].filter(Boolean).join(' → ')], ['강', n('hp')]];
-  if (m.fhp) rows.push(['앞+강', n('fhp')]);
   rows.push(['앉아 약 / 강', n('clp') + ' / ' + n('chp')], ['점프 약 / 강', n('jlp') + ' / ' + n('jhp')],
             ['특', n('sp1')], ['앞+특', n('sp2')], ['필살기 (게이지 100%)', n('su')]);
-  helpEl.innerHTML = '<h3></h3><p>이동 A·D / 점프 W / 앉기 S / 약 J · 강 K · 특 L · 필 I<br>휴대폰: 왼쪽 패드 + 약·강·특·필 버튼<br>가드: 가만히 있거나 뒤로 · 대시: 앞/뒤 두 번</p><table></table>';
+  helpEl.innerHTML = '<h3></h3><p>이동 A·D / 점프 W / 앉기 S / 약 J · 강 K · 특 L · 필 I<br>휴대폰: 왼쪽 패드 + 약·강·특·필 버튼<br>가드: 가만히 있거나 뒤로 · 대시: 앞/뒤 두 번</p><table></table><p style="margin:6px 0 0;color:#555">이 창을 누르면 닫혀요 · 위 “설명 켜기”로 다시 열기</p>';
   helpEl.querySelector('h3').textContent = CH[key].name + ' 기술';
   const tb = helpEl.querySelector('table');
   for (const [a, b] of rows) { const tr = tb.insertRow(); tr.insertCell().textContent = a; tr.insertCell().textContent = b; }
@@ -1858,9 +1853,10 @@ function fillHelp(key) {
 function updateHelp() {
   const show = helpWanted == null ? (NET.role === 'solo' && NET.stage === 'fight') : helpWanted;
   if (show) fillHelp(SEL.me.char);
-  helpEl.hidden = !show; helpBtn.setAttribute('aria-pressed', String(show));
+  helpEl.hidden = !show; helpBtn.setAttribute('aria-pressed', String(show)); helpBtn.textContent = show ? '설명 끄기' : '설명 켜기';
 }
 helpBtn.addEventListener('click', () => { helpWanted = helpEl.hidden; updateHelp(); cv.focus(); });
+helpEl.addEventListener('click', () => { helpWanted = false; updateHelp(); cv.focus(); });   // tap the panel to close it
 
 // lobby buttons
 $('menu').addEventListener('click', () => { if (MM.on) MM.stop(''); leaveRoom(); newMatch(); showLobby(''); setStatus('메뉴'); });
