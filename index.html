@@ -716,7 +716,7 @@ function updateProj() {
       let d = want - p.ang; d = Math.atan2(Math.sin(d), Math.cos(d));
       p.ang += Math.max(-p.p.turn, Math.min(p.p.turn, d));
       p.x += Math.cos(p.ang) * p.p.speed; p.y += Math.sin(p.ang) * p.p.speed; p.dir = Math.cos(p.ang) >= 0 ? 1 : -1; p.life--;
-      if (overlap({ x: p.x - 12, y: p.y - 8, w: 24, h: 16 }, hurt(o))) { p.done = true; fx('boom', p.x, p.y, { life: 22 }); shake(7); tryHit(p.owner, o, { ...p.p, srcX: p.owner.x, py: p.y }); }
+      if (overlap({ x: p.x - 22, y: p.y - 11, w: 44, h: 22 }, hurt(o))) { p.done = true; fx('boom', p.x, p.y, { life: 22 }); shake(7); tryHit(p.owner, o, { ...p.p, srcX: p.owner.x, py: p.y }); }
       else if (p.y >= GROUND - 6 || p.life <= 0) { p.done = true; fx('boom', p.x, Math.min(p.y, GROUND - 20), { life: 22 }); shake(4); }
       continue;
     }
@@ -1158,7 +1158,7 @@ function drawProj(p) {
     const ang = p.ang != null ? p.ang : (p.dir > 0 ? 0.6 : Math.PI - 0.6);
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
     if (ready(missileImg)) {
-      const w = 64, h = w * missileImg.naturalHeight / missileImg.naturalWidth;
+      const w = 128, h = w * missileImg.naturalHeight / missileImg.naturalWidth;   // 2x
       ctx.fillStyle = 'rgba(255,170,60,.85)'; ctx.beginPath(); ctx.moveTo(-w / 2, -3); ctx.lineTo(-w / 2 - 16 - Math.random() * 8, 0); ctx.lineTo(-w / 2, 3); ctx.fill();
       ctx.drawImage(missileImg, -w / 2, -h / 2, w, h); ctx.restore(); return;
     }
