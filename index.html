@@ -198,6 +198,7 @@ const CH = {
     sp1: { name: '3점사', kind: 'proj', gun: true, burst: 3, every: 6, su: 10, ac: 12, re: 16, pose: 'aim',
            proj: { shape: 'bullet', w: 16, h: 6, vx: 16, mx: 60, hy: 126, dmg: 30, lvl: 'mid', hs: 12, push: 2, stop: 3 } },
     sp2: { name: '잡아 던지기', kind: 'grab', toss: true, su: 5, ac: 3, re: 28, dmg: 80, reach: 62, hy: 75, hh: 110, hs: 40, push: 2, stop: 8, pose: 'tackle' },   // grab, then throw over to the other side
+    reload: { name: '재장전', kind: 'reload', quiet: true, su: 60, re: 4 },   // after a shot, the next 3점사/무릎쏴 press reloads; a hit cancels it
     su:  { name: '포병 화력지원', kind: 'proj', gun: true, spg: true, burst: 3, every: 16, su: 12, ac: 34, re: 20, pose: 'aimUp',   // 3 shells, each aimed where the opponent is
            proj: { shape: 'shell', fall: true, warn: 30, vy: 18, radius: 55, dmg: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
   }}
@@ -292,7 +293,7 @@ function watchSounds() {
   for (const [k, t] of SND.fx) if (tick - t > 30) SND.fx.delete(k);
   for (const f of G.p) {
     const p = SND.p[f.i];
-    if (f.st === 'attack' && f.mk && f.mk !== 'su' && !(f.mv && f.mv.gun) && (p.mk !== f.mk || f.t < p.t)) SFX.play(f.mv && f.mv.kind === 'proj' ? 'shoot' : 'swing');
+    if (f.st === 'attack' && f.mk && f.mk !== 'su' && !(f.mv && (f.mv.gun || f.mv.quiet)) && (p.mk !== f.mk || f.t < p.t)) SFX.play(f.mv && f.mv.kind === 'proj' ? 'shoot' : 'swing');
     if (f.st === 'jump' && p.st && p.st !== 'jump' && p.st !== 'attack' && !f.ground) SFX.play('jump');
     if (f.st === 'dash' && p.st !== 'dash') SFX.play('dash');
     if (f.st === 'ko' && p.st && p.st !== 'ko') SFX.play('ko');
@@ -399,7 +400,7 @@ let G, tick = 0;
 function fighter(i, key) {
   return { i, key, c: CH[key], x: i ? 680 : 280, y: GROUND, vx: 0, vy: 0, face: i ? -1 : 1, hp: 1000, hpLag: 1000, gauge: 0,
            st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], wins: 0,
-           ground: true, crouch: false, guard: false, inp: NONE, tapF: -99, tapB: -99, buf: 0, airUsed: false };
+           ground: true, crouch: false, guard: false, inp: NONE, tapF: -99, tapB: -99, buf: 0, airUsed: false, ammo: true };
 }
 function newMatch() {
   G = { round: 1, phase: 'intro', pt: 0, timer: 99 * 60, p: [fighter(0, PICK.p1), fighter(1, PICK.p2)],
@@ -407,7 +408,7 @@ function newMatch() {
 }
 function resetRound() {
   for (const f of G.p) Object.assign(f, { x: f.i ? 680 : 280, y: GROUND, vx: 0, vy: 0, face: f.i ? -1 : 1, hp: 1000, hpLag: 1000,
-    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false });
+    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false, ammo: true });
   Object.assign(G, { proj: [], sum: [], fx: [], phase: 'intro', pt: 0, timer: 99 * 60, flash: null, freeze: 0, shake: 0 });
 }
 document.getElementById('restart').addEventListener('click', () => restartMatch());
@@ -500,6 +501,8 @@ function control(f, o) {
   f.guard = f.ground && bk && (['idle', 'walk', 'crouch', 'blockstun'].includes(f.st));
 }
 
+// rifle shots need a loaded magazine (shared by 3점사 and 무릎쏴); otherwise the press starts a reload
+function gunReady(f, k) { return f.c.moves[k].gun && k !== 'su' && !f.ammo ? 'reload' : k; }
 function canUse(f, k) {
   const mv = f.c.moves[k];
   if (mv.kind === 'proj') return !G.proj.some(p => p.owner === f);
@@ -510,13 +513,13 @@ function canUse(f, k) {
 function free(f, i) {
   const { fw, bk } = dirs(f, i);
   if (i.su && f.gauge >= 100) return start(f, 'su');
-  if (i.sp) { const k = fw ? 'sp2' : 'sp1'; if (canUse(f, k)) return start(f, k); }
+  if (i.sp) { const k = fw ? 'sp2' : 'sp1'; if (canUse(f, k)) return start(f, gunReady(f, k)); }
   if (!f.ground) {
     if ((i.hp || i.lp) && !f.airUsed) { f.airUsed = true; const k = i.hp ? 'jhp' : 'jlp'; f.airMove = f.c.moves[k]; return start(f, k); }
     if (fw || bk) f.vx += ((fw ? 4.2 : -4.2) * f.face - f.vx) * 0.2;   // air control: steer while jumping
     return;
   }
-  if (i.hp) return start(f, i.d ? 'chp' : 'hp');
+  if (i.hp) return start(f, gunReady(f, i.d ? 'chp' : 'hp'));
   if (i.lp) return start(f, i.d ? 'clp' : 'lp');
   const tapF = f.face > 0 ? i.pr : i.pl, tapB = f.face > 0 ? i.pl : i.pr;
   if (tapF) { if (tick - f.tapF < 14) return dash(f, 1); f.tapF = tick; }
@@ -542,6 +545,7 @@ function start(f, k) {
   if (f.ground) f.vx = 0;
   if (k === 'su') { f.gauge = 0; G.flash = { t: 42, name: mv.name, who: f }; }
   if (mv.cd) f.cd = mv.cd;
+  if (mv.gun && k !== 'su') f.ammo = false;
   squash(f, 0.9, 1.08);
 }
 
@@ -568,6 +572,8 @@ function fire(f, o, mv) {
     if (mv.gun) fx('muzzle', f.x + f.face * ((p.mx || 50) + 8) * K, f.y - p.hy * K, { dir: f.face });
   } else if (mv.kind === 'shout') {
     shout(f, o, mv.radius, { dmg: mv.dmg, stun: mv.stun });
+  } else if (mv.kind === 'reload') {
+    f.ammo = true; popup(f, '장전 완료', '#7fe3a0');
   } else if (mv.kind === 'super') {
     G.sum.push(counselor(f, o, -40, 'run'), counselor(f, o, W + 40, 'run'));
   }
@@ -958,7 +964,19 @@ function drawFighter(s, o = {}) {
   ctx.restore();
   drawStunLabel(s, o);
 }
+function drawReload(s) {   // "재장전" with a filling bar above the head
+  if (s.st !== 'attack' || s.mk !== 'reload' || !s.mv) return;
+  const k = Math.min(1, s.t / s.mv.su), y = s.y - 172 * K, w = 70;
+  ctx.save();
+  ctx.font = `20px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.lineWidth = 5; ctx.strokeStyle = '#0c1120'; ctx.strokeText('재장전', s.x, y - 14);
+  ctx.fillStyle = '#ffffff'; ctx.fillText('재장전', s.x, y - 14);
+  ctx.fillStyle = 'rgba(8,12,22,.85)'; rr(s.x - w / 2 - 2, y - 2, w + 4, 10, 4); ctx.fill();
+  ctx.fillStyle = '#f0b545'; rr(s.x - w / 2, y, w * k, 6, 3); ctx.fill();
+  ctx.restore();
+}
 function drawStunLabel(s, o) {
+  if (!o.ghost) drawReload(s);
   if (s.st === 'stun' && !o.ghost) {
     ctx.save();
     ctx.font = `30px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
