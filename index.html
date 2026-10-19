@@ -144,7 +144,7 @@ canvas{display:block;touch-action:none}
     <p class="label">계급 순위</p>
     <div class="board" id="board"><table><thead><tr><th>#</th><th>닉네임</th><th>계급</th><th class="r">전적</th></tr></thead><tbody id="boardBody"><tr><td colspan="4">불러오는 중…</td></tr></tbody></table></div>
     <div class="row" id="logoutRow" hidden><button type="button" id="logout">로그아웃</button></div>
-    <p class="hint">같은 계급끼리: 이기면 +8, 지면 −8. 계급이 다르면: 높은 쪽은 이겨도 +3·지면 −7, 낮은 쪽은 이기면 +10·지면 −5. 100점이면 승급전(3판 2승), 0점에서 2연패하면 강등. 같은 와이파이가 아니어도, 데이터로도 돼요.</p>
+    <p class="hint">같은 계급끼리: 이기면 +8, 지면 −6. 계급이 다르면: 높은 쪽은 이겨도 +3·지면 −7, 낮은 쪽은 이기면 +10·지면 −5. 100점이면 승급전(3판 2승), 0점에서 2연패하면 강등. 같은 와이파이가 아니어도, 데이터로도 돼요.</p>
   </div>
 </div>
 
@@ -223,11 +223,27 @@ const CH = {
     chp: { name: '로프 하단 휘두르기', kind: 'melee', low: true, su: 9, ac: 5, re: 18, dmg: 58, reach: 160, hy: 16, hh: 34, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'rope', art: 'cheavy' },
     jlp: { name: '중단 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 92, hy: 60, hh: 70, lvl: 'mid', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '닻 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 60, reach: 95, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
-    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 78, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 1.3초
-           proj: { shape: 'gull', w: 50, h: 40, vx: 7, mx: 100, hy: 112, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5 } },
+    sp1: { name: '패링 카운터', kind: 'parry', scd: 240, su: 2, ac: 12, re: 22, pose: 'punch', art: 'parry', art2: 'guard', counter: 'ctr' },   // 0.2 s parry window, 4 s cooldown
+    ctr: { name: '닻 돌진 카운터', kind: 'rush', unblock: true, su: 3, ac: 12, re: 18, speed: 14, hits: 1, dmg: 90, reach: 120, hy: 95, hs: 26, push: 11, stop: 10, pose: 'punch', art: 'counter', art2: 'light' },   // fires only after a successful parry
     sp2: { name: '긴빠이', kind: 'melee', unblock: true, seal: 300, cd: 480, su: 22, ac: 4, re: 22, dmg: 10, reach: 95, hy: 90, hh: 90, hs: 18, push: 2, stop: 6, pose: 'punch' },   // slow, unblockable, a hit cancels it; seals 강·필 for 5 s
     su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 8, su: 14, ac: 18, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
            proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 18, vy: 26, radius: 70, ff: true, dmg: 120, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
+  }},
+  nu: { name: '간호사관 생도', body: '#2d4a7a', trim: '#e9edf2', skin: '#f0c9a6', hair: '#1a1416', moves: {
+    lp:  { name: '의료가방 휘두르기', kind: 'melee', su: 4, ac: 3, re: 9, dmg: 30, step: 3, reach: 108, hy: 95, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp2' },
+    lp2: { name: '가방 2타', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 30, step: 3, reach: 95, hy: 112, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp3', art: 'light2' },
+    lp3: { name: '가방 내려치기', kind: 'melee', su: 8, ac: 4, re: 20, dmg: 50, step: 5, reach: 95, hy: 60, hh: 80, hs: 20, push: 9, stop: 7, pose: 'punch', art: 'light3' },
+    hp:  { name: '붕대 채찍', kind: 'melee', su: 10, ac: 6, re: 17, dmg: 65, reach: 160, hy: 105, hh: 50, hs: 22, push: 7, stop: 7, pose: 'rope' },
+    clp: { name: '낮게 걷어차기', kind: 'melee', low: true, su: 4, ac: 3, re: 10, dmg: 30, reach: 115, hy: 18, hh: 36, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'kick', art: 'clight' },
+    chp: { name: '붕대 하단 휘감기', kind: 'melee', low: true, su: 9, ac: 5, re: 19, dmg: 50, reach: 165, hy: 16, hh: 34, lvl: 'low', hs: 30, push: 2, stop: 7, pose: 'rope', art: 'cheavy' },
+    jlp: { name: '점프 킥', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 32, reach: 115, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
+    jhp: { name: '가방 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 75, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'punch', art: 'jheavy' },
+    sp1: { name: '주사기 투척', kind: 'proj', scd: 240, su: 12, re: 18, pose: 'throw',   // 피해 20 + 독 50 (3초), 셀프 주사와 재사용 4초 공유
+           proj: { shape: 'syringe', w: 40, h: 12, vx: 11, mx: 70, hy: 110, dmg: 20, poison: 50, lvl: 'mid', hs: 14, push: 3, stop: 4 } },
+    csp: { name: '셀프 주사', kind: 'heal', low: true, scd: 240, heal: 50, su: 20, re: 10, pose: 'punch', art: 'csp', art2: 'crouch' },   // 앉아서 특: 3초에 걸쳐 50 회복, 맞으면 끊김
+    sp2: { name: '제세동기', kind: 'melee', cd: 300, su: 10, ac: 4, re: 22, dmg: 40, stun: 90, reach: 95, hy: 75, hh: 70, hs: 20, push: 2, stop: 9, pose: 'punch' },   // 맞으면 1.5초 감전, 재사용 5초
+    su:  { name: '단체 예방접종', kind: 'proj', fan: [-0.32, -0.16, 0, 0.16, 0.32], su: 14, re: 24, pose: 'throw',   // 주사기 5개를 부채꼴로: 맞을 때마다 피해 10 + 독 30 (겹침)
+           proj: { shape: 'syringe', w: 40, h: 12, vx: 10, mx: 60, hy: 105, dmg: 10, poison: 30, lvl: 'mid', hs: 16, push: 3, stop: 4 } }
   }}
 };
 // 벌점 부과: −1 / −2 / −3점 중 하나가 무작위로 날아감, 점수가 클수록 아픔
@@ -338,7 +354,7 @@ function watchSounds() {
 const K = 1.5;   // character scale: art, hitboxes and reach all grow together
 
 // ---------- sprites (ChatGPT art, background removed; w/h/ax in game px, ax = hip anchor from left) ----------
-const SPRITE_META = {"s4": {"idle": {"w": 119.3, "h": 150.0, "ax": 61.4}, "walk": {"w": 103.0, "h": 150.3, "ax": 47.3}, "jump": {"w": 111.0, "h": 119.0, "ax": 58.1}, "crouch": {"w": 99.3, "h": 113.3, "ax": 49.0}, "guard": {"w": 117.3, "h": 148.3, "ax": 63.2}, "cguard": {"w": 86.0, "h": 119.3, "ax": 47.3}, "light": {"w": 234.0, "h": 131.3, "ax": 84.4}, "heavy": {"w": 229.0, "h": 132.7, "ax": 88.4}, "sp1": {"w": 101.3, "h": 150.7, "ax": 46.1}, "sp2": {"w": 136.3, "h": 150.0, "ax": 54.0}, "hit": {"w": 117.7, "h": 145.3, "ax": 53.5}, "stun": {"w": 32.0, "h": 157.7, "ax": 15.1}, "win": {"w": 107.0, "h": 157.7, "ax": 40.6}, "super": {"w": 240.7, "h": 113.7, "ax": 105.1}, "walk2": {"w": 83.0, "h": 150.3, "ax": 41.8}, "ko": {"w": 160.0, "h": 33.3, "ax": 80.8}, "light2": {"w": 244.7, "h": 142.0, "ax": 89.9}, "light3": {"w": 272.3, "h": 128.3, "ax": 112.0}, "clight": {"w": 272.0, "h": 108.3, "ax": 118.1}, "cheavy": {"w": 296.0, "h": 96.3, "ax": 93.8}, "jlight": {"w": 231.7, "h": 150.0, "ax": 114.5}, "jheavy": {"w": 167.7, "h": 140.0, "ax": 40.4}}, "f1": {"idle": {"w": 99.0, "h": 153.3, "ax": 48.3}, "walk": {"w": 113.3, "h": 146.3, "ax": 55.1}, "jump": {"w": 129.7, "h": 113.0, "ax": 68.2}, "crouch": {"w": 67.3, "h": 118.0, "ax": 35.0}, "guard": {"w": 108.7, "h": 150.3, "ax": 53.6}, "cguard": {"w": 83.7, "h": 126.3, "ax": 45.5}, "light": {"w": 148.0, "h": 146.7, "ax": 64.5}, "heavy": {"w": 142.7, "h": 154.7, "ax": 42.1}, "sp1": {"w": 144.3, "h": 153.0, "ax": 57.9}, "sp2": {"w": 201.7, "h": 146.0, "ax": 89.3}, "super": {"w": 133.0, "h": 163.7, "ax": 62.3}, "hit": {"w": 130.3, "h": 147.7, "ax": 71.3}, "stun": {"w": 29.3, "h": 157.7, "ax": 14.3}, "win": {"w": 50.0, "h": 157.7, "ax": 18.7}, "ko": {"w": 160.0, "h": 32.7, "ax": 79.1}, "walk2": {"w": 68.3, "h": 146.3, "ax": 30.3}, "light2": {"w": 141.3, "h": 150.0, "ax": 79.9}, "light3": {"w": 195.7, "h": 140.0, "ax": 94.8}, "clight": {"w": 134.7, "h": 120.0, "ax": 43.1}, "cheavy": {"w": 191.0, "h": 108.0, "ax": 51.5}, "jlight": {"w": 141.3, "h": 112.0, "ax": 64.3}, "jheavy": {"w": 101.7, "h": 122.0, "ax": 43.8}}, "cs": {"run": {"w": 139.3, "h": 141.3, "ax": 72.3}, "atk": {"w": 166.7, "h": 131.7, "ax": 88.2}}, "ka": {"idle": {"w": 139.3, "h": 150.0, "ax": 61.6}, "walk": {"w": 126.7, "h": 150.0, "ax": 57.4}, "walk2": {"w": 104.7, "h": 150.0, "ax": 45.6}, "jump": {"w": 102.3, "h": 128.0, "ax": 41.0}, "crouch": {"w": 128.0, "h": 105.0, "ax": 46.1}, "light": {"w": 172.0, "h": 140.0, "ax": 57.3}, "light2": {"w": 176.7, "h": 138.0, "ax": 61.7}, "light3": {"w": 223.0, "h": 120.0, "ax": 85.5}, "heavy": {"w": 153.3, "h": 140.0, "ax": 76.9}, "clight": {"w": 189.0, "h": 100.0, "ax": 87.6}, "cheavy": {"w": 124.0, "h": 110.0, "ax": 68.3}, "jlight": {"w": 132.3, "h": 110.0, "ax": 59.1}, "jheavy": {"w": 163.3, "h": 112.0, "ax": 78.6}, "sp1": {"w": 136.3, "h": 150.0, "ax": 55.1}, "sp2": {"w": 133.7, "h": 135.0, "ax": 57.8}, "super": {"w": 128.0, "h": 165.0, "ax": 60.9}, "hit": {"w": 113.3, "h": 128.0, "ax": 51.6}, "stun": {"w": 53.0, "h": 158.0, "ax": 25.2}, "ko": {"w": 170.0, "h": 52.0, "ax": 85.0}, "win": {"w": 80.0, "h": 158.0, "ax": 46.3}}, "na": {"idle": {"w": 115.3, "h": 150.0, "ax": 54.6}, "walk": {"w": 113.7, "h": 150.0, "ax": 52.1}, "walk2": {"w": 61.7, "h": 152.0, "ax": 23.0}, "jump": {"w": 68.7, "h": 120.0, "ax": 33.5}, "crouch": {"w": 79.3, "h": 105.0, "ax": 43.9}, "guard": {"w": 91.0, "h": 148.0, "ax": 41.2}, "cguard": {"w": 74.0, "h": 100.0, "ax": 45.1}, "light": {"w": 141.7, "h": 142.0, "ax": 52.9}, "light2": {"w": 144.3, "h": 142.0, "ax": 60.1}, "light3": {"w": 245.3, "h": 135.0, "ax": 64.8}, "heavy": {"w": 210.7, "h": 135.0, "ax": 87.4}, "fheavy": {"w": 165.7, "h": 132.0, "ax": 59.9}, "clight": {"w": 159.3, "h": 100.0, "ax": 40.6}, "cheavy": {"w": 254.3, "h": 110.3, "ax": 70.3}, "jlight": {"w": 181.7, "h": 110.0, "ax": 84.7}, "jheavy": {"w": 155.7, "h": 115.0, "ax": 56.1}, "sp1": {"w": 161.7, "h": 128.3, "ax": 71.5}, "sp2": {"w": 207.7, "h": 118.0, "ax": 102.3}, "super": {"w": 175.3, "h": 150.0, "ax": 74.8}, "hit": {"w": 132.0, "h": 140.0, "ax": 67.3}, "stun": {"w": 43.7, "h": 160.0, "ax": 21.7}, "ko": {"w": 194.3, "h": 50.0, "ax": 97.1}, "win": {"w": 88.7, "h": 160.0, "ax": 42.9}}};
+const SPRITE_META = {"s4": {"idle": {"w": 119.3, "h": 150.0, "ax": 61.4}, "walk": {"w": 103.0, "h": 150.3, "ax": 47.3}, "jump": {"w": 111.0, "h": 119.0, "ax": 58.1}, "crouch": {"w": 99.3, "h": 113.3, "ax": 49.0}, "guard": {"w": 117.3, "h": 148.3, "ax": 63.2}, "cguard": {"w": 86.0, "h": 119.3, "ax": 47.3}, "light": {"w": 234.0, "h": 131.3, "ax": 84.4}, "heavy": {"w": 229.0, "h": 132.7, "ax": 88.4}, "sp1": {"w": 101.3, "h": 150.7, "ax": 46.1}, "sp2": {"w": 136.3, "h": 150.0, "ax": 54.0}, "hit": {"w": 117.7, "h": 145.3, "ax": 53.5}, "stun": {"w": 32.0, "h": 157.7, "ax": 15.1}, "win": {"w": 107.0, "h": 157.7, "ax": 40.6}, "super": {"w": 240.7, "h": 113.7, "ax": 105.1}, "walk2": {"w": 83.0, "h": 150.3, "ax": 41.8}, "ko": {"w": 160.0, "h": 33.3, "ax": 80.8}, "light2": {"w": 244.7, "h": 142.0, "ax": 89.9}, "light3": {"w": 272.3, "h": 128.3, "ax": 112.0}, "clight": {"w": 272.0, "h": 108.3, "ax": 118.1}, "cheavy": {"w": 296.0, "h": 96.3, "ax": 93.8}, "jlight": {"w": 231.7, "h": 150.0, "ax": 114.5}, "jheavy": {"w": 167.7, "h": 140.0, "ax": 40.4}}, "f1": {"idle": {"w": 99.0, "h": 153.3, "ax": 48.3}, "walk": {"w": 113.3, "h": 146.3, "ax": 55.1}, "jump": {"w": 129.7, "h": 113.0, "ax": 68.2}, "crouch": {"w": 67.3, "h": 118.0, "ax": 35.0}, "guard": {"w": 108.7, "h": 150.3, "ax": 53.6}, "cguard": {"w": 83.7, "h": 126.3, "ax": 45.5}, "light": {"w": 148.0, "h": 146.7, "ax": 64.5}, "heavy": {"w": 142.7, "h": 154.7, "ax": 42.1}, "sp1": {"w": 144.3, "h": 153.0, "ax": 57.9}, "sp2": {"w": 201.7, "h": 146.0, "ax": 89.3}, "super": {"w": 133.0, "h": 163.7, "ax": 62.3}, "hit": {"w": 130.3, "h": 147.7, "ax": 71.3}, "stun": {"w": 29.3, "h": 157.7, "ax": 14.3}, "win": {"w": 50.0, "h": 157.7, "ax": 18.7}, "ko": {"w": 160.0, "h": 32.7, "ax": 79.1}, "walk2": {"w": 68.3, "h": 146.3, "ax": 30.3}, "light2": {"w": 141.3, "h": 150.0, "ax": 79.9}, "light3": {"w": 195.7, "h": 140.0, "ax": 94.8}, "clight": {"w": 134.7, "h": 120.0, "ax": 43.1}, "cheavy": {"w": 191.0, "h": 108.0, "ax": 51.5}, "jlight": {"w": 141.3, "h": 112.0, "ax": 64.3}, "jheavy": {"w": 101.7, "h": 122.0, "ax": 43.8}}, "cs": {"run": {"w": 139.3, "h": 141.3, "ax": 72.3}, "atk": {"w": 166.7, "h": 131.7, "ax": 88.2}}, "ka": {"idle": {"w": 139.3, "h": 150.0, "ax": 61.6}, "walk": {"w": 126.7, "h": 150.0, "ax": 57.4}, "walk2": {"w": 104.7, "h": 150.0, "ax": 45.6}, "jump": {"w": 102.3, "h": 128.0, "ax": 41.0}, "crouch": {"w": 128.0, "h": 105.0, "ax": 46.1}, "light": {"w": 172.0, "h": 140.0, "ax": 57.3}, "light2": {"w": 176.7, "h": 138.0, "ax": 61.7}, "light3": {"w": 223.0, "h": 120.0, "ax": 85.5}, "heavy": {"w": 153.3, "h": 140.0, "ax": 76.9}, "clight": {"w": 189.0, "h": 100.0, "ax": 87.6}, "cheavy": {"w": 124.0, "h": 110.0, "ax": 68.3}, "jlight": {"w": 132.3, "h": 110.0, "ax": 59.1}, "jheavy": {"w": 163.3, "h": 112.0, "ax": 78.6}, "sp1": {"w": 136.3, "h": 150.0, "ax": 55.1}, "sp2": {"w": 133.7, "h": 135.0, "ax": 57.8}, "super": {"w": 128.0, "h": 165.0, "ax": 60.9}, "hit": {"w": 113.3, "h": 128.0, "ax": 51.6}, "stun": {"w": 53.0, "h": 158.0, "ax": 25.2}, "ko": {"w": 170.0, "h": 52.0, "ax": 85.0}, "win": {"w": 80.0, "h": 158.0, "ax": 46.3}}, "na": {"idle": {"w": 115.3, "h": 150.0, "ax": 54.6}, "walk": {"w": 113.7, "h": 150.0, "ax": 52.1}, "walk2": {"w": 61.7, "h": 152.0, "ax": 23.0}, "jump": {"w": 68.7, "h": 120.0, "ax": 33.5}, "crouch": {"w": 79.3, "h": 105.0, "ax": 43.9}, "guard": {"w": 91.0, "h": 148.0, "ax": 41.2}, "cguard": {"w": 74.0, "h": 100.0, "ax": 45.1}, "light": {"w": 141.7, "h": 142.0, "ax": 52.9}, "light2": {"w": 144.3, "h": 142.0, "ax": 60.1}, "light3": {"w": 245.3, "h": 135.0, "ax": 64.8}, "heavy": {"w": 210.7, "h": 135.0, "ax": 87.4}, "fheavy": {"w": 165.7, "h": 132.0, "ax": 59.9}, "clight": {"w": 159.3, "h": 100.0, "ax": 40.6}, "cheavy": {"w": 254.3, "h": 110.3, "ax": 70.3}, "jlight": {"w": 181.7, "h": 110.0, "ax": 84.7}, "jheavy": {"w": 155.7, "h": 115.0, "ax": 56.1}, "sp1": {"w": 161.7, "h": 128.3, "ax": 71.5}, "sp2": {"w": 207.7, "h": 118.0, "ax": 102.3}, "super": {"w": 175.3, "h": 150.0, "ax": 74.8}, "hit": {"w": 132.0, "h": 140.0, "ax": 67.3}, "stun": {"w": 43.7, "h": 160.0, "ax": 21.7}, "ko": {"w": 194.3, "h": 50.0, "ax": 97.1}, "win": {"w": 88.7, "h": 160.0, "ax": 42.9}, "counter": {"w": 267.3, "h": 118.3, "ax": 145.8}, "parry": {"w": 150.0, "h": 165.3, "ax": 85.3}}, "nu": {"idle": {"w": 109.7, "h": 150.0, "ax": 47.1}, "walk": {"w": 111.7, "h": 150.0, "ax": 49.2}, "walk2": {"w": 64.3, "h": 150.0, "ax": 26.7}, "jump": {"w": 104.7, "h": 125.0, "ax": 61.8}, "crouch": {"w": 69.3, "h": 100.0, "ax": 34.1}, "guard": {"w": 102.3, "h": 148.0, "ax": 45.5}, "cguard": {"w": 92.0, "h": 100.0, "ax": 44.3}, "light": {"w": 167.7, "h": 140.0, "ax": 58.6}, "light2": {"w": 156.3, "h": 140.0, "ax": 93.0}, "light3": {"w": 164.0, "h": 130.0, "ax": 91.8}, "heavy": {"w": 231.0, "h": 138.0, "ax": 65.3}, "clight": {"w": 151.7, "h": 95.0, "ax": 33.0}, "cheavy": {"w": 208.7, "h": 100.0, "ax": 37.4}, "jlight": {"w": 185.7, "h": 110.0, "ax": 64.8}, "jheavy": {"w": 105.0, "h": 115.0, "ax": 37.7}, "sp1": {"w": 150.3, "h": 140.0, "ax": 63.1}, "csp": {"w": 84.7, "h": 110.0, "ax": 27.0}, "sp2": {"w": 219.3, "h": 125.0, "ax": 123.2}, "super": {"w": 234.3, "h": 140.3, "ax": 94.1}, "hit": {"w": 136.7, "h": 135.0, "ax": 81.1}, "stun": {"w": 36.7, "h": 158.0, "ax": 20.7}, "ko": {"w": 191.7, "h": 50.0, "ax": 95.7}, "win": {"w": 68.7, "h": 160.0, "ax": 33.0}}};
 const SPR = {};
 for (const key in SPRITE_META) {
   SPR[key] = { img: {}, tint: {} };
@@ -366,7 +382,6 @@ const STAGES = ['room', 'parade', 'deck'].map(key => { const img = new Image(); 
 const jetImg = new Image(); jetImg.src = 'assets/s4_jet.webp';
 const missileImg = new Image(); missileImg.src = 'assets/s4_missile.webp';   // AIM-9 art (drawn shape until it exists)
 const shipImg = new Image(); shipImg.src = 'assets/na_ship.webp';
-const gullImg = new Image(); gullImg.src = 'assets/na_gull.webp';
 const pickStage = () => Math.random() * STAGES.length | 0;
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -437,7 +452,7 @@ let G, tick = 0;
 function fighter(i, key) {
   return { i, key, c: CH[key], x: i ? 680 : 280, y: GROUND, vx: 0, vy: 0, face: i ? -1 : 1, hp: 1000, hpLag: 1000, gauge: 0,
            st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], wins: 0,
-           ground: true, crouch: false, guard: false, inp: NONE, tapF: -99, tapB: -99, buf: 0, airUsed: false, ammo: true, seal: 0 };
+           ground: true, crouch: false, guard: false, inp: NONE, tapF: -99, tapB: -99, buf: 0, airUsed: false, ammo: true, seal: 0, poison: 0, regen: 0 };
 }
 function newMatch() {
   G = { round: 1, phase: 'intro', pt: 0, timer: 99 * 60, p: [fighter(0, PICK.p1), fighter(1, PICK.p2)],
@@ -445,7 +460,7 @@ function newMatch() {
 }
 function resetRound() {
   for (const f of G.p) Object.assign(f, { x: f.i ? 680 : 280, y: GROUND, vx: 0, vy: 0, face: f.i ? -1 : 1, hp: 1000, hpLag: 1000,
-    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false, ammo: true, seal: 0, scd: 0 });
+    st: 'idle', t: 0, mk: null, mv: null, hit: false, lock: 0, stun: 0, cd: 0, sx: 1, sy: 1, trail: [], ground: true, crouch: false, guard: false, ammo: true, seal: 0, scd: 0, poison: 0, regen: 0 });
   Object.assign(G, { proj: [], sum: [], fx: [], phase: 'intro', pt: 0, timer: 99 * 60, flash: null, freeze: 0, shake: 0, stage: pickStage() });
 }
 document.getElementById('restart').addEventListener('click', () => restartMatch());
@@ -502,6 +517,7 @@ function step() {
     if (f.cd > 0) f.cd--;
     if (f.seal > 0) f.seal--;
     if (f.scd > 0) f.scd--;
+    if (G.phase === 'fight' && f.st !== 'ko') overTime(f);
     recordTrail(f);
   }
   if (G.phase === 'fight' && --G.timer <= 0) { G.timer = 0; roundOver(); }
@@ -543,6 +559,17 @@ function control(f, o) {
 
 // 3점사 needs a loaded magazine; otherwise the press starts a reload
 function gunReady(f, k) { return f.c.moves[k].mag && !f.ammo ? 'reload' : k; }
+// 독 / 셀프 주사: effects that run on a timer (5 points every 0.3 s for 3 s = 50)
+function overTime(f) {
+  if (f.regen > 0) { f.regen--; if (f.regen % 18 === 0) f.hp = Math.min(1000, f.hp + 5); }
+  if (f.poison > 0) {
+    f.poison--;
+    if (f.poison % 18 === 0) {
+      f.hp = Math.max(0, f.hp - 5);
+      if (f.hp <= 0) { Object.assign(f, { st: 'ko', t: 0, ground: false, vy: -7, vx: 0, mv: null, mk: null }); freeze(16); shake(10); roundOver(); }
+    }
+  }
+}
 function canUse(f, k) {
   const mv = f.c.moves[k];
   if (mv.cd && f.cd > 0) return false;
@@ -555,7 +582,7 @@ function canUse(f, k) {
 function free(f, i) {
   const { fw, bk } = dirs(f, i), hp = i.hp && !(f.seal > 0);   // 긴빠이: 강공격·필살기 sealed
   if (i.su && f.gauge >= 100 && !(f.seal > 0)) return start(f, 'su');
-  if (i.sp) { const k = fw ? 'sp2' : 'sp1'; if (canUse(f, k)) return start(f, gunReady(f, k)); }
+  if (i.sp) { const k = fw ? 'sp2' : i.d && f.ground && f.c.moves.csp ? 'csp' : 'sp1'; if (canUse(f, k)) return start(f, gunReady(f, k)); }
   if (!f.ground) {
     if ((hp || i.lp) && !f.airUsed) { f.airUsed = true; const k = hp ? 'jhp' : 'jlp'; f.airMove = f.c.moves[k]; return start(f, k); }
     if (fw || bk) f.vx += ((fw ? 4.2 : -4.2) * f.face - f.vx) * 0.2;   // air control: steer while jumping
@@ -617,8 +644,10 @@ function fire(f, o, mv, n = 0) {
       fx('muzzle', f.x, 70, { dir: f.face });
       return;
     }
-    G.proj.push({ owner: f, tgt: o, x: f.x + f.face * (p.mx || 50) * K, y: f.y - p.hy * K, vx: p.vx * f.face, dir: f.face, p,
-                  w: p.w ? p.w * K : textW(p.text, p.size * K), h: p.h ? p.h * K : p.size * K + 2, life: 240, passed: false, done: false });
+    for (const ang of mv.fan || [0]) {   // a fan sends several at spread angles
+      G.proj.push({ owner: f, tgt: o, x: f.x + f.face * (p.mx || 50) * K, y: f.y - p.hy * K, vx: p.vx * Math.cos(ang) * f.face, vy: p.vx * Math.sin(ang), ang, dir: f.face, p,
+                    w: p.w ? p.w * K : textW(p.text, p.size * K), h: p.h ? p.h * K : p.size * K + 2, life: 240, passed: false, done: false });
+    }
     if (p.arc) {   // lob it so it lands where the opponent stands now
       const q = G.proj[G.proj.length - 1], g = p.grav, dy = GROUND - 8 - q.y, t = (-p.vy + Math.sqrt(p.vy * p.vy + 2 * g * dy)) / g;
       q.vx = f.face * Math.max(2.5, Math.min(10, Math.abs(o.x - q.x) / t));
@@ -626,6 +655,8 @@ function fire(f, o, mv, n = 0) {
     if (mv.gun) fx('muzzle', f.x + f.face * ((p.mx || 50) + 8) * K, f.y - p.hy * K, { dir: f.face });
   } else if (mv.kind === 'shout') {
     shout(f, o, mv.radius, { dmg: mv.dmg, stun: mv.stun });
+  } else if (mv.kind === 'heal') {
+    f.regen = 180; popup(f, '회복 중', '#7fe3a0');
   } else if (mv.kind === 'reload') {
     f.ammo = true; popup(f, '장전 완료', '#7fe3a0');
   } else if (mv.kind === 'super') {
@@ -689,7 +720,7 @@ function melee(f, o) {
     if (mv.kind === 'rush') { f.rushStop = true; f.vx = 0; }
     const last = f.hits >= (mv.hits || 1);
     tryHit(f, o, { dmg: mv.dmg, hs: mv.hs, push: last && mv.lastPush ? mv.lastPush : mv.push, stop: mv.stop, lvl: mv.lvl || 'mid', counter: mv.counter, srcX: f.x, py: hy,
-                   grab: mv.kind === 'grab', unblock: mv.kind === 'grab' || !!mv.unblock, seal: mv.seal, gbreak: mv.gbreak });
+                   grab: mv.kind === 'grab', unblock: mv.kind === 'grab' || !!mv.unblock, seal: mv.seal, gbreak: mv.gbreak, stun: mv.stun });
     if (mv.pull && o.st !== 'ko') o.vx = -f.face * 10;   // rope drags them in
     if (mv.dizzy && o.st === 'hitstun') popup(o, '휘청!', '#ffcf5a');
     if (mv.fling && o.st !== 'ko') Object.assign(o, { vx: f.face * 9, vy: -12, ground: false });   // thrown far forward
@@ -721,8 +752,9 @@ function updateProj() {
       else if (p.y >= GROUND - 6 || p.life <= 0) { p.done = true; fx('boom', p.x, Math.min(p.y, GROUND - 20), { life: 22 }); shake(4); }
       continue;
     }
-    p.x += p.vx; p.life--;
+    p.x += p.vx; if (p.vy) p.y += p.vy; p.life--;
     const o = p.tgt;
+    if (p.y > GROUND - 4) { p.done = true; continue; }   // fan needles that hit the floor
     if (overlap({ x: p.x - p.w / 2, y: p.y - p.h / 2, w: p.w, h: p.h }, hurt(o))) {
       p.done = true;
       tryHit(p.owner, o, { ...p.p, srcX: p.x - p.dir * 100, py: p.y });
@@ -778,6 +810,13 @@ function updateSum() {
 
 function tryHit(att, def, a) {
   if (def.st === 'ko') return;
+  const pm = def.st === 'attack' && def.mv && def.mv.kind === 'parry' ? def.mv : null;
+  if (pm && !a.grab && def.t >= pm.su && def.t < pm.su + pm.ac) {   // 패링 성공: no damage, dash straight back in
+    popup(def, '패링!', '#7cc8ff'); fx('guard', def.x + def.face * 20, a.py ?? def.y - 90 * K); freeze(10); shake(4);
+    def.face = att.x >= def.x ? 1 : -1;
+    start(def, pm.counter);
+    return;
+  }
   const dir = Math.sign(def.x - a.srcX) || att.face;
   const i = def.inp || NONE;
   const away = (dir > 0 ? i.r : i.l) || (!i.l && !i.r && !i.noAuto && dir === -def.face);   // hold away, or stand still facing the attack
@@ -801,6 +840,7 @@ function tryHit(att, def, a) {
   if (a.grab) popup(def, '잡기!', '#ff6a4d');
   else if (guardable && a.unblock) popup(def, '가드 불가', '#ff6a4d');
   if (a.seal) { def.seal = a.seal; popup(def, '긴빠이 당함!', '#ff6a4d'); }
+  if (a.poison) { def.poison = Math.min(540, def.poison + a.poison / 5 * 18); popup(def, '중독!', '#7fe36a'); }   // 5 per 0.3 s until the dose runs out (max 150 queued)
   if (a.counter && def.crouch && def.ground) {
     a = { ...a, dmg: Math.round(a.dmg * 1.5), hs: (a.hs || 14) + 12, stop: (a.stop || 4) + 4 };
     popup(def, '카운터!', '#ff9b3d');
@@ -891,7 +931,7 @@ function spritePose(s) {
   if ((G.phase === 'end' || G.phase === 'match') && G.winner === s.i && s.ground) return 'win';
   if (s.st === 'blockstun' || s.guard) return s.crouch && s.ground ? 'cguard' : 'guard';
   if (s.st === 'attack' && mv) {
-    if (mv.art) { if (sprite(s.key, mv.art)) return mv.art; return mv.low ? 'crouch' : mv.air ? 'jump' : 'light'; }
+    if (mv.art) { if (sprite(s.key, mv.art)) return mv.art; if (mv.art2 && sprite(s.key, mv.art2)) return mv.art2; return mv.low ? 'crouch' : mv.air ? 'jump' : 'light'; }
     if ((s.mk === 'lp' || s.mk === 'hp') && s.t < mv.su) return 'idle';
     return { lp: 'light', hp: 'heavy', sp1: 'sp1', sp2: 'sp2', su: sprite(s.key, 'super') ? 'super' : 'light' }[s.mk];
   }
@@ -1065,6 +1105,16 @@ function drawReload(s) {   // "재장전" with a filling bar above the head
 }
 function drawStunLabel(s, o) {
   if (!o.ghost) drawReload(s);
+  if (!o.ghost) {   // 중독 / 회복 tags stacked above the head
+    const tags = [];
+    if (s.poison > 0) tags.push(['중독', '#7fe36a']);
+    if (s.regen > 0) tags.push(['회복 중', '#9fe8c0']);
+    tags.forEach(([t, c], n) => {
+      ctx.save(); ctx.font = `16px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+      const y = s.y - (s.seal > 0 ? 212 : 196) * K - n * 20;
+      ctx.lineWidth = 5; ctx.strokeStyle = '#0c1120'; ctx.strokeText(t, s.x, y); ctx.fillStyle = c; ctx.fillText(t, s.x, y); ctx.restore();
+    });
+  }
   if (!o.ghost && s.seal > 0) {   // 긴빠이: sealed buttons + seconds left
     ctx.save(); ctx.font = `17px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
     const t = '강·필 봉인 ' + Math.ceil(s.seal / 60) + '초', y = s.y - 190 * K;
@@ -1142,17 +1192,15 @@ function drawProj(p) {
     ctx.fillStyle = '#e8c36a'; rr(-8, -3.5, 16, 7, 3); ctx.fill();
     ctx.restore(); return;
   }
-  if (q.shape === 'gull') {   // seagull
-    const flap = Math.sin(p.life * 0.5) * 8;
-    ctx.save(); ctx.translate(p.x, p.y); ctx.scale(p.dir, 1);
-    if (ready(gullImg)) { const w = 86, h = w * gullImg.naturalHeight / gullImg.naturalWidth; ctx.drawImage(gullImg, -w / 2, -h / 2 + flap * 0.4, w, h); ctx.restore(); return; }
-    ctx.scale(2, 2);
-    ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = 2.5; ctx.fillStyle = '#f4f6f8';
-    ctx.beginPath(); ctx.ellipse(0, 0, 14, 6, 0, 0, 7); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-2, -14 - flap, 10, -6 - flap); ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-12, -14 - flap, -22, -6 - flap); ctx.stroke();
-    ctx.fillStyle = '#f0b545'; ctx.beginPath(); ctx.moveTo(14, -1); ctx.lineTo(21, 1); ctx.lineTo(14, 3); ctx.fill();
+
+  if (q.shape === 'syringe') {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.scale(p.dir, 1); if (p.ang) ctx.rotate(p.ang);
+    ctx.fillStyle = '#dfe9f2'; rr(-16, -5, 24, 10, 3); ctx.fill(); ctx.fillStyle = '#6fe08a'; ctx.fillRect(-12, -3, 14, 6);
+    ctx.fillStyle = '#9aa2ab'; ctx.fillRect(-22, -2, 6, 4); ctx.fillRect(-25, -6, 3, 12);
+    ctx.strokeStyle = '#c9d1d9'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(22, 0); ctx.stroke();
     ctx.restore(); return;
   }
+
   if (q.shape === 'grenade') {
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 0.3 * p.dir);
     ctx.fillStyle = '#3e4a2f'; ctx.beginPath(); ctx.ellipse(0, 2, 7, 9, 0, 0, 7); ctx.fill();
@@ -1278,7 +1326,8 @@ function gaugeBar(f, x, y, w, rev) {
   // skills with a cooldown: a small bar above the super gauge that refills as the skill comes back
   // long cooldown (f.cd) and short cooldown (f.scd) each get their own bar, stacked upward
   const bars = [];
-  for (const m of Object.values(f.c.moves)) { if (m.cd) bars.push([m, m.cd, f.cd]); if (m.scd) bars.push([m, m.scd, f.scd || 0]); }
+  let scdShown = false;
+  for (const m of Object.values(f.c.moves)) { if (m.cd) bars.push([m, m.cd, f.cd]); if (m.scd && !scdShown) { scdShown = true; bars.push([m, m.scd, f.scd || 0]); } }
   bars.forEach(([cdMove, full, left], n) => {
     const bw = w * 0.6, bx = rev ? x + w - bw : x, by = y - 34 - n * 26, ready = left <= 0;
     const pw = bw * (ready ? 1 : 1 - left / full);
@@ -1500,7 +1549,7 @@ const TIERS = ['생도', '소위', '중위', '대위', '소령', '중령', '대�
 const TOP = TIERS.length - 1;
 
 // One match result → my new record. opp only needs { tier }.
-// Same tier ±8. Different tier: higher wins +3 / loses −7, lower wins +10 / loses −5.
+// Same tier +8 / −6. Different tier: higher wins +3 / loses −7, lower wins +10 / loses −5.
 // 100 points → promotion series (best of 3, points frozen): 2 wins = next tier at 0, 2 losses = back to 90.
 // Losing twice in a row while at 0 points → previous tier at 90.
 function rateMatch(me, opp, won) {
@@ -1512,7 +1561,7 @@ function rateMatch(me, opp, won) {
     else if (r.pl >= 2) Object.assign(r, { pts: 90, promo: false, pw: 0, pl: 0 });
     return r;
   }
-  const d = me.tier === opp.tier ? (won ? 8 : -8) : me.tier > opp.tier ? (won ? 3 : -7) : (won ? 10 : -5);
+  const d = me.tier === opp.tier ? (won ? 8 : -6) : me.tier > opp.tier ? (won ? 3 : -7) : (won ? 10 : -5);
   if (won) {
     r.zl = 0;
     r.pts += d;
@@ -1666,7 +1715,7 @@ const NET = { role: 'solo', peer: null, conn: null, code: '', gin: { h: 0, c: [0
               stage: 'lobby', opp: null, oppAtStart: null, meAtStart: null, done: false, nextSel: 0 };
 const $ = id => document.getElementById(id);
 const lobbyEl = $('lobby'), lobbyMsg = $('lobbyMsg'), statusEl = $('status'), restartBtn = $('restart'), selEl = $('select');
-const CHARS = { f1: true, s4: true, ka: true, na: true };
+const CHARS = { f1: true, s4: true, ka: true, na: true, nu: true };
 const other = k => (k === 'f1' ? 's4' : 'f1');
 const ID_PREFIX = 'cadet-fight-v1-';
 const SEL = { me: { char: 'f1', ready: false }, opp: { char: '', ready: false } };
@@ -1696,7 +1745,7 @@ function snapshot() {
     ph: G.phase, bg: G.stage | 0, pt: G.pt, tm: G.timer, rd: G.round, w: G.winner, msg: G.msg, sh: r1(G.shake),
     fl: G.flash ? [G.flash.t, G.flash.name, G.flash.who.i] : 0,
     p: G.p.map(f => [f.key, r1(f.x), r1(f.y), f.face, f.st, f.t, f.mk || 0, +f.crouch, +f.ground, +f.guard, f.hp, Math.round(f.hpLag),
-                     Math.round(f.gauge), f.cd, r2(f.sx), r2(f.sy), f.stun, f.wins, Math.round(f.vx), f.seal | 0, f.scd | 0]),
+                     Math.round(f.gauge), f.cd, r2(f.sx), r2(f.sy), f.stun, f.wins, Math.round(f.vx), f.seal | 0, f.scd | 0, f.poison | 0, f.regen | 0]),
     pr: G.proj.map(p => [p.owner.i, projKey(p), r1(p.x), r1(p.y), p.dir, p.life]),
     su: G.sum.map(s => [r1(s.x), r1(s.y), s.face, s.st, s.t, r2(s.a)]),
     fx: G.fx.slice(-12).map(e => ({ ...e, x: r1(e.x), y: r1(e.y) }))
@@ -1711,7 +1760,7 @@ function applySnap(s) {
       const f = G && G.p && G.p[i] && G.p[i].key === key ? G.p[i] : fighter(i, key);
       Object.assign(f, { x: +a[1], y: +a[2], face: a[3] < 0 ? -1 : 1, st: String(a[4]), t: a[5] | 0, mk: f.c.moves[a[6]] ? a[6] : null,
         crouch: !!a[7], ground: !!a[8], guard: !!a[9], hp: +a[10], hpLag: +a[11], gauge: +a[12], cd: a[13] | 0,
-        sx: +a[14] || 1, sy: +a[15] || 1, stun: a[16] | 0, wins: a[17] | 0, vx: +a[18] || 0, seal: a[19] | 0, scd: a[20] | 0 });
+        sx: +a[14] || 1, sy: +a[15] || 1, stun: a[16] | 0, wins: a[17] | 0, vx: +a[18] || 0, seal: a[19] | 0, scd: a[20] | 0, poison: a[21] | 0, regen: a[22] | 0 });
       f.mv = f.mk ? f.c.moves[f.mk] : null;
       return f;
     });
@@ -1852,7 +1901,7 @@ function fillHelp(key) {
   const m = CH[key].moves, n = k => (m[k] ? m[k].name : '');
   const rows = [['약 연타', [n('lp'), n('lp2'), n('lp3')].filter(Boolean).join(' → ')], ['강', n('hp')]];
   rows.push(['앉아 약 / 강', n('clp') + ' / ' + n('chp')], ['점프 약 / 강', n('jlp') + ' / ' + n('jhp')],
-            ['특', n('sp1')], ['앞+특', n('sp2')], ['필살기 (게이지 100%)', n('su')]);
+            ['특', n('sp1')], ...(m.csp ? [['앉아 특', n('csp')]] : []), ['앞+특', n('sp2')], ['필살기 (게이지 100%)', n('su')]);
   helpEl.innerHTML = '<h3></h3><p>이동 A·D / 점프 W / 앉기 S / 약 J · 강 K · 특 L · 필 I<br>휴대폰: 왼쪽 패드 + 약·강·특·필 버튼<br>가드: 가만히 있거나 뒤로 · 대시: 앞/뒤 두 번</p><table></table><p style="margin:6px 0 0;color:#555">이 창을 누르면 닫혀요 · 위 “설명 켜기”로 다시 열기</p>';
   helpEl.querySelector('h3').textContent = CH[key].name + ' 기술';
   const tb = helpEl.querySelector('table');
