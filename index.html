@@ -195,7 +195,7 @@ const CH = {
     sp1: { name: '벌점 부과', kind: 'proj', su: 12, re: 18, pose: 'throw', art: 'sp2',
            proj: { text: '-2점', size: 28, vx: 9, hy: 72, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5, drain: 25, fill: '#ff4d3d', edge: '#ffffff' } },
     su:  { name: 'KF-21 보라매 출격', kind: 'proj', jet: true, su: 14, ac: 30, re: 20, pose: 'shout', art: 'sp1',   // jet crosses the sky, one homing missile
-           proj: { shape: 'missile', home: true, speed: 9, turn: 0.06, w: 30, h: 14, dmg: 150, unblock: true, lvl: 'mid', hs: 26, push: 8, stop: 9 } }
+           proj: { shape: 'missile', home: true, speed: 9, turn: 0.06, w: 30, h: 14, dmg: 100, lvl: 'low', hs: 26, push: 8, stop: 9 } }
   }},
   ka: { name: '육사 생도', body: '#5d6b45', trim: '#2f3a22', skin: '#e6bc94', hair: '#16161a', rifle: true, moves: {
     lp:  { name: '찔러', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 30, step: 3, reach: 115, hy: 110, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp2' },
@@ -206,28 +206,28 @@ const CH = {
            proj: { shape: 'grenade', arc: true, w: 14, h: 18, vx: 7, vy: -8, grav: 0.55, mx: 55, hy: 58, radius: 55, dmg: 60, lvl: 'low', hs: 20, push: 7, stop: 6 } },
     jlp: { name: '점프 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 78, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '대검 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 90, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
-    hp:  { name: '개머리 돌려쳐', kind: 'melee', su: 9, ac: 5, re: 16, dmg: 95, step: 5, reach: 85, hy: 110, hh: 60, hs: 44, dizzy: true, push: 6, stop: 8, pose: 'butt' },   // hit: long reel (short stun)
+    hp:  { name: '개머리 돌려쳐', kind: 'melee', su: 9, ac: 5, re: 16, dmg: 95, step: 5, reach: 85, hy: 110, hh: 60, hs: 44, dizzy: true, gbreak: true, push: 6, stop: 8, pose: 'butt' },   // hit: long reel (short stun)
     sp1: { name: '3점사', kind: 'proj', gun: true, mag: true, burst: 3, every: 6, su: 10, ac: 12, re: 16, pose: 'aim',
            proj: { shape: 'bullet', w: 16, h: 6, vx: 16, mx: 60, hy: 126, dmg: 30, lvl: 'mid', hs: 12, push: 2, stop: 3 } },
     sp2: { name: '잡아 던지기', kind: 'grab', toss: true, su: 5, ac: 3, re: 28, dmg: 80, reach: 62, hy: 75, hh: 110, hs: 40, push: 2, stop: 8, pose: 'tackle' },   // grab, then throw over to the other side
-    reload: { name: '재장전', kind: 'reload', quiet: true, su: 60, re: 4 },   // after 3점사, the next 3점사 press reloads; a hit cancels it
-    su:  { name: '포병 화력지원', kind: 'proj', gun: true, spg: true, burst: 3, every: 16, su: 12, ac: 34, re: 20, pose: 'aimUp',   // 3 shells, each aimed where the opponent is
-           proj: { shape: 'shell', fall: true, warn: 30, vy: 18, radius: 55, dmg: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
+    reload: { name: '재장전', kind: 'reload', quiet: true, su: 30, re: 4 },   // after 3점사, the next 3점사 press reloads; a hit or moving cancels it
+    su:  { name: '포병 화력지원', kind: 'proj', gun: true, spg: true, burst: 3, every: 10, su: 12, ac: 22, re: 20, pose: 'aimUp',   // 3 shells, each aimed where the opponent is
+           proj: { shape: 'shell', fall: true, warn: 18, vy: 26, radius: 55, dmg: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
   }},
   na: { name: '해사 생도', body: '#e9edf2', trim: '#1d2b4a', skin: '#ecc29b', hair: '#141418', moves: {
     lp:  { name: '주먹 지르기', kind: 'melee', su: 4, ac: 3, re: 9, dmg: 35, step: 4, reach: 88, hy: 113, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp2' },
-    lp2: { name: '주먹 2타', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 35, step: 3, reach: 84, hy: 113, hs: 16, push: 3, stop: 4, pose: 'punch', next: 'lp3', art: 'light2' },
-    lp3: { name: '로프 끌어오기', kind: 'melee', su: 9, ac: 4, re: 22, dmg: 45, reach: 165, hy: 100, hh: 40, hs: 24, push: 0, stop: 6, pose: 'rope', pull: true, art: 'light3' },   // reaches past 예도; a hit drags them in
+    lp2: { name: '로프 휘두르기', kind: 'melee', su: 6, ac: 4, re: 11, dmg: 35, reach: 130, hy: 95, hh: 50, hs: 16, push: 3, stop: 4, pose: 'rope', next: 'lp3', art: 'heavy' },
+    lp3: { name: '로프 끌어오기', kind: 'melee', su: 9, ac: 4, re: 22, dmg: 45, reach: 200, hy: 100, hh: 40, hs: 24, push: 0, stop: 6, pose: 'rope', pull: true, art: 'light3' },   // reaches past 예도; a hit drags them in
     hp:  { name: '로프 휘두르기', kind: 'melee', su: 11, ac: 6, re: 18, dmg: 70, reach: 135, hy: 90, hh: 60, hs: 22, push: 8, stop: 7, pose: 'rope' },
     clp: { name: '로우킥', kind: 'melee', low: true, su: 4, ac: 3, re: 10, dmg: 32, reach: 110, hy: 18, hh: 36, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'kick', art: 'clight' },
     chp: { name: '로프 하단 휘두르기', kind: 'melee', low: true, su: 9, ac: 5, re: 18, dmg: 58, reach: 160, hy: 16, hh: 34, lvl: 'low', hs: 22, push: 7, stop: 7, pose: 'rope', art: 'cheavy' },
     jlp: { name: '중단 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 92, hy: 60, hh: 70, lvl: 'mid', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '닻 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 60, reach: 95, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
-    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 120, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 2초
+    sp1: { name: '갈매기 날리기', kind: 'proj', scd: 78, su: 12, re: 18, pose: 'throw', art: 'fheavy',   // 재사용 1.3초
            proj: { shape: 'gull', w: 50, h: 40, vx: 7, mx: 100, hy: 112, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5 } },
     sp2: { name: '긴빠이', kind: 'melee', unblock: true, seal: 300, cd: 480, su: 22, ac: 4, re: 22, dmg: 10, reach: 95, hy: 90, hh: 90, hs: 18, push: 2, stop: 6, pose: 'punch' },   // slow, unblockable, a hit cancels it; seals 강·필 for 5 s
-    su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 12, su: 14, ac: 26, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
-           proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 34, vy: 18, radius: 70, ff: true, dmg: 120, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
+    su:  { name: '거북선 함포', kind: 'proj', ship: true, burst: 3, every: 8, su: 14, ac: 18, re: 20, pose: 'shout',   // front / middle / back of the opponent; hits its own captain too
+           proj: { shape: 'ball', fall: true, offs: [-130, 0, 130], warn: 18, vy: 26, radius: 70, ff: true, dmg: 120, unblock: true, lvl: 'mid', hs: 24, push: 7, stop: 8 } }
   }}
 };
 // 벌점 부과: −1 / −2 / −3점 중 하나가 무작위로 날아감, 점수가 클수록 아픔
@@ -531,6 +531,7 @@ function control(f, o) {
   } else if (f.st === 'attack') {
     if (f.inp.lp) f.buf = 8; else if (f.buf > 0) f.buf--;
     const mv = f.mv;
+    if (f.mk === 'reload' && f.t < mv.su && (f.inp.l || f.inp.r || f.inp.u)) { f.st = 'idle'; f.t = 0; f.mv = null; f.mk = null; popup(f, '재장전 취소', '#ff8a6b'); return; }
     // light chain: a light press during the active/recovery window links into the next hit
     if (mv.next && f.buf > 0 && f.t >= mv.su + mv.ac && f.ground) { f.buf = 0; start(f, mv.next); }
     else runMove(f, o);
@@ -546,7 +547,7 @@ function canUse(f, k) {
   const mv = f.c.moves[k];
   if (mv.cd && f.cd > 0) return false;
   if (mv.scd && f.scd > 0) return false;
-  if (mv.kind === 'proj') return !G.proj.some(p => p.owner === f);
+  if (mv.kind === 'proj') return !!mv.scd || !G.proj.some(p => p.owner === f);   // a short cooldown replaces the one-on-screen limit
   if (mv.kind === 'shout') return f.cd <= 0;
   return true;
 }
@@ -688,7 +689,7 @@ function melee(f, o) {
     if (mv.kind === 'rush') { f.rushStop = true; f.vx = 0; }
     const last = f.hits >= (mv.hits || 1);
     tryHit(f, o, { dmg: mv.dmg, hs: mv.hs, push: last && mv.lastPush ? mv.lastPush : mv.push, stop: mv.stop, lvl: mv.lvl || 'mid', counter: mv.counter, srcX: f.x, py: hy,
-                   grab: mv.kind === 'grab', unblock: mv.kind === 'grab' || !!mv.unblock, seal: mv.seal });
+                   grab: mv.kind === 'grab', unblock: mv.kind === 'grab' || !!mv.unblock, seal: mv.seal, gbreak: mv.gbreak });
     if (mv.pull && o.st !== 'ko') o.vx = -f.face * 10;   // rope drags them in
     if (mv.dizzy && o.st === 'hitstun') popup(o, '휘청!', '#ffcf5a');
     if (mv.fling && o.st !== 'ko') Object.assign(o, { vx: f.face * 9, vy: -12, ground: false });   // thrown far forward
@@ -785,6 +786,11 @@ function tryHit(att, def, a) {
   if (blocked && a.lvl === 'overhead' && def.crouch) blocked = false;   // jump attacks: stand to block
   if (blocked && a.lvl === 'low' && !def.crouch) blocked = false;        // low attacks: crouch to block
   const py = a.py ?? def.y - 80 * K;
+  if (blocked && a.gbreak) {   // 개머리: knocks the guard open — no damage, but they are left wide open
+    Object.assign(def, { st: 'hitstun', t: 0, lock: 34, vx: dir * 3, crouch: false, mv: null, mk: null });
+    popup(def, '가드 브레이크!', '#ff9b3d'); fx('guard', def.x - dir * 22, py); freeze(6); shake(4);
+    return;
+  }
   if (blocked) {
     Object.assign(def, { st: 'blockstun', t: 0, lock: 12, vx: dir * a.push * 0.6 });
     att.gauge = Math.min(100, att.gauge + 3); def.gauge = Math.min(100, def.gauge + 2);
