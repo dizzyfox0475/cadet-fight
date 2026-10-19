@@ -69,12 +69,34 @@ canvas{display:block;touch-action:none}
 #lobbyMsg{min-height:1.4em;color:var(--gold);font-size:13.5px;margin:0}
 #lobbyMsg strong{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.15em}
 .hint{color:var(--muted);font-size:12px;line-height:1.55;margin:0}
+
+#lobby .view[hidden],#select[hidden]{display:none}
+.field{min-width:0;font:inherit;font-size:16px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:10px}
+.me{display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.me b{font-family:var(--display);font-weight:400;font-size:20px}
+.me span{color:var(--gold);font-size:14px}
+.board{max-height:30vh;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.board table{width:100%;border-collapse:collapse;font-size:13px}
+.board td,.board th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.board th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:500}
+.board td.r{text-align:right;color:var(--muted)}
+.board tr.mine td{color:var(--gold)}
+#select{position:fixed;inset:0;z-index:21;display:flex;align-items:center;justify-content:center;background:rgba(6,9,18,.94);
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));overflow:auto}
+#select .card{width:min(620px,100%)}
+.chars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chars button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:var(--bg)}
+.chars img{height:min(22vh,120px);width:auto;object-fit:contain}
+.chars button[aria-pressed=true]{border-color:var(--gold);background:#2a2412}
+.chars button[aria-pressed=true] span{color:var(--gold);font-weight:700}
+#selResult{margin:0;font-family:var(--display);font-size:20px;color:var(--gold);min-height:1.2em}
+#selOpp{margin:0;font-size:13.5px;color:var(--muted)}
 </style>
 
 <div class="app">
   <div class="top">
     <b>생도 <span>격투</span></b>
-    <span id="status">혼자 연습</span>
+    <span id="status">메뉴</span>
     <button id="restart" class="primary" type="button" hidden>다시 하기</button>
     <button id="fullscreen" type="button">전체화면</button>
     <button id="sound" type="button" aria-pressed="true">소리 켜짐</button>
@@ -95,20 +117,35 @@ canvas{display:block;touch-action:none}
 <div id="lobby">
   <div class="card">
     <h1>생도 <span>격투</span></h1>
-    <p class="label">내 캐릭터</p>
-    <div class="row">
-      <button type="button" class="pick" data-c="f1" aria-pressed="true">공사 1학년</button>
-      <button type="button" class="pick" data-c="s4" aria-pressed="false">공사 4학년</button>
+    <div class="view" id="vLogin">
+      <div class="row"><input id="nick" class="field" maxlength="10" autocomplete="username" placeholder="닉네임" aria-label="닉네임"></div>
+      <div class="row" style="margin-top:8px"><input id="pw" class="field" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)" aria-label="비밀번호"></div>
+      <div class="row" style="margin-top:8px"><button type="button" id="login" class="primary big">로그인</button><button type="button" id="signup" class="big">회원가입</button></div>
     </div>
-    <p class="label">온라인 대전</p>
-    <div class="row"><button type="button" id="create" class="primary big" disabled>방 만들기</button></div>
-    <div class="row"><input id="code" maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="코드 4자리" aria-label="방 코드"><button type="button" id="join" class="big" disabled>입장</button></div>
-    <p id="lobbyMsg" role="status">온라인 연결을 확인하는 중…</p>
+    <div class="view" id="vMenu" hidden>
+      <div class="me"><b id="meNick"></b><span id="meRank"></span></div>
+      <p class="label" style="margin-top:12px">온라인 대전</p>
+      <div class="row"><button type="button" id="create" class="primary big" disabled>방 만들기</button></div>
+      <div class="row" style="margin-top:8px"><input id="code" maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="코드 4자리" aria-label="방 코드"><button type="button" id="join" class="big" disabled>입장</button></div>
+    </div>
+    <p id="lobbyMsg" role="status"></p>
     <div class="row"><button type="button" id="solo" class="big">혼자 연습 (허수아비 상대)</button></div>
-    <p class="hint">로그인 없이 링크만 있으면 돼요. 같은 와이파이가 아니어도 되고 데이터로도 돼요. 한 명이 방을 만들고, 화면에 나온 코드 4자리를 상대가 입력하면 바로 시작돼요. 방향 패드를 앞으로 두 번 밀면 대시, 앉은 채 약·강은 하단, 앞+특은 특수기2예요.</p>
+    <p class="label">계급 순위</p>
+    <div class="board" id="board"><table><thead><tr><th>#</th><th>닉네임</th><th>계급</th><th class="r">전적</th></tr></thead><tbody id="boardBody"><tr><td colspan="4">불러오는 중…</td></tr></tbody></table></div>
+    <div class="row" id="logoutRow" hidden><button type="button" id="logout">로그아웃</button></div>
+    <p class="hint">같은 계급끼리: 이기면 +8, 지면 −8. 계급이 다르면: 높은 쪽은 이겨도 +3·지면 −7, 낮은 쪽은 이기면 +10·지면 −5. 100점이면 승급전(3판 2승), 0점에서 2연패하면 강등. 같은 와이파이가 아니어도, 데이터로도 돼요.</p>
   </div>
 </div>
 
+<div id="select" hidden>
+  <div class="card">
+    <p id="selResult" role="status"></p>
+    <h1 style="font-size:24px">캐릭터 선택</h1>
+    <div class="chars" id="chars"></div>
+    <p id="selOpp"></p>
+    <div class="row"><button type="button" id="ready" class="primary big">준비 완료</button><button type="button" id="selLeave" class="big">나가기</button></div>
+  </div>
+</div>
 <script src="assets/peerjs.min.js"></script>
 <script>
 (() => {
@@ -147,6 +184,22 @@ const CH = {
     sp1: { name: '벌점 부과', kind: 'proj', su: 12, re: 18, pose: 'throw', art: 'sp2',
            proj: { text: '-2점', size: 28, vx: 9, hy: 72, dmg: 40, lvl: 'mid', hs: 16, push: 4, stop: 5, drain: 25, fill: '#ff4d3d', edge: '#ffffff' } },
     su:  { name: '예도 돌격', kind: 'rush', su: 10, ac: 20, re: 26, speed: 13, hits: 3, every: 6, dmg: 50, reach: 140, hy: 96, hs: 26, push: 2, lastPush: 10, stop: 6, pose: 'lunge' }
+  }},
+  ka: { name: '육사 생도', body: '#5d6b45', trim: '#2f3a22', skin: '#e6bc94', hair: '#16161a', rifle: true, moves: {
+    lp:  { name: '찔러', kind: 'melee', su: 5, ac: 3, re: 10, dmg: 30, step: 3, reach: 115, hy: 110, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp2' },
+    lp2: { name: '찔러 2타', kind: 'melee', su: 6, ac: 3, re: 11, dmg: 32, step: 3, reach: 115, hy: 106, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp3', art: 'light2' },
+    lp3: { name: '베고 찔러', kind: 'melee', su: 8, ac: 5, re: 22, dmg: 55, step: 6, reach: 135, hy: 94, hs: 20, push: 9, stop: 7, pose: 'thrust', art: 'light3' },
+    clp: { name: '낮게 찌르기', kind: 'melee', low: true, su: 5, ac: 3, re: 11, dmg: 28, reach: 100, hy: 60, hh: 50, lvl: 'low', hs: 14, push: 3, stop: 4, pose: 'thrust', art: 'clight' },
+    chp: { name: '무릎쏴', kind: 'proj', low: true, gun: true, su: 9, re: 20, pose: 'aim', art: 'cheavy',
+           proj: { shape: 'bullet', w: 16, h: 6, vx: 16, mx: 85, hy: 82, dmg: 45, lvl: 'mid', hs: 16, push: 4, stop: 4 } },
+    jlp: { name: '점프 발차기', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 78, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
+    jhp: { name: '대검 내려찍기', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 6, ac: 10, re: 10, dmg: 55, reach: 90, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'slash', art: 'jheavy' },
+    hp:  { name: '개머리 돌려쳐', kind: 'melee', su: 9, ac: 5, re: 16, dmg: 95, step: 5, reach: 85, hy: 110, hh: 60, hs: 44, dizzy: true, push: 6, stop: 8, pose: 'butt' },   // hit: long reel (short stun)
+    sp1: { name: '3점사', kind: 'proj', gun: true, burst: 3, every: 6, su: 10, ac: 12, re: 16, pose: 'aim',
+           proj: { shape: 'bullet', w: 16, h: 6, vx: 16, mx: 60, hy: 126, dmg: 30, lvl: 'mid', hs: 12, push: 2, stop: 3 } },
+    sp2: { name: '잡아 던지기', kind: 'grab', toss: true, su: 5, ac: 3, re: 28, dmg: 80, reach: 62, hy: 75, hh: 110, hs: 40, push: 2, stop: 8, pose: 'tackle' },   // grab, then throw over to the other side
+    su:  { name: '포병 화력지원', kind: 'proj', gun: true, spg: true, burst: 3, every: 16, su: 12, ac: 34, re: 20, pose: 'aimUp',   // 3 shells, each aimed where the opponent is
+           proj: { shape: 'shell', fall: true, warn: 30, vy: 18, radius: 55, dmg: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7 } }
   }}
 };
 const P_COL = ['#6fb3ff', '#ff7a6b'];
@@ -198,6 +251,8 @@ const SFX = (() => {
     guard:   () => { tone('triangle', 230, 160, 0.09, 0.5); noise(0.05, 0.35, 1100, 500); },
     jump:    () => tone('sine', 150, 240, 0.1, 0.35),
     dash:    () => noise(0.15, 0.38, 350, 900),
+    gun:     () => { noise(0.07, 0.55, 2400, 600, 0, 'bandpass'); tone('square', 180, 70, 0.07, 0.25, 0, 900); },
+    boom:    () => { tone('sine', 90, 28, 0.6, 0.9); noise(0.55, 0.7, 600, 50); },
     shout:   () => { tone('sawtooth', 110, 98, 0.32, 0.4, 0, 500); tone('sawtooth', 165, 147, 0.32, 0.25, 0, 500); },
     counter: () => { tone('triangle', 330, 330, 0.08, 0.4); tone('triangle', 494, 494, 0.14, 0.4, 0.08); noise(0.08, 0.3, 600, 150); },
     super:   () => { tone('sawtooth', 90, 520, 0.55, 0.4, 0, 700); tone('sine', 60, 45, 0.55, 0.5); },
@@ -230,12 +285,14 @@ function watchSounds() {
     if (e.k === 'spark') SFX.play(e.big ? 'hitH' : 'hitL');
     else if (e.k === 'guard') SFX.play('guard');
     else if (e.k === 'ring') SFX.play('shout');
+    else if (e.k === 'muzzle') SFX.play('gun');
+    else if (e.k === 'boom') SFX.play('boom');
     else if (e.k === 'text' && e.text === '카운터!') SFX.play('counter');
   }
   for (const [k, t] of SND.fx) if (tick - t > 30) SND.fx.delete(k);
   for (const f of G.p) {
     const p = SND.p[f.i];
-    if (f.st === 'attack' && f.mk && f.mk !== 'su' && (p.mk !== f.mk || f.t < p.t)) SFX.play(f.mv && f.mv.kind === 'proj' ? 'shoot' : 'swing');
+    if (f.st === 'attack' && f.mk && f.mk !== 'su' && !(f.mv && f.mv.gun) && (p.mk !== f.mk || f.t < p.t)) SFX.play(f.mv && f.mv.kind === 'proj' ? 'shoot' : 'swing');
     if (f.st === 'jump' && p.st && p.st !== 'jump' && p.st !== 'attack' && !f.ground) SFX.play('jump');
     if (f.st === 'dash' && p.st !== 'dash') SFX.play('dash');
     if (f.st === 'ko' && p.st && p.st !== 'ko') SFX.play('ko');
@@ -250,7 +307,7 @@ function watchSounds() {
 const K = 1.5;   // character scale: art, hitboxes and reach all grow together
 
 // ---------- sprites (ChatGPT art, background removed; w/h/ax in game px, ax = hip anchor from left) ----------
-const SPRITE_META = {"s4": {"idle": {"w": 119.3, "h": 150.0, "ax": 61.4}, "walk": {"w": 103.0, "h": 150.3, "ax": 47.3}, "jump": {"w": 111.0, "h": 119.0, "ax": 58.1}, "crouch": {"w": 99.3, "h": 113.3, "ax": 49.0}, "guard": {"w": 117.3, "h": 148.3, "ax": 63.2}, "cguard": {"w": 86.0, "h": 119.3, "ax": 47.3}, "light": {"w": 234.0, "h": 131.3, "ax": 84.4}, "heavy": {"w": 229.0, "h": 132.7, "ax": 88.4}, "sp1": {"w": 101.3, "h": 150.7, "ax": 46.1}, "sp2": {"w": 136.3, "h": 150.0, "ax": 54.0}, "hit": {"w": 117.7, "h": 145.3, "ax": 53.5}, "stun": {"w": 32.0, "h": 157.7, "ax": 15.1}, "win": {"w": 107.0, "h": 157.7, "ax": 40.6}, "super": {"w": 240.7, "h": 113.7, "ax": 105.1}, "walk2": {"w": 83.0, "h": 150.3, "ax": 41.8}, "ko": {"w": 160.0, "h": 33.3, "ax": 80.8}, "light2": {"w": 244.7, "h": 142.0, "ax": 89.9}, "light3": {"w": 272.3, "h": 128.3, "ax": 112.0}, "clight": {"w": 272.0, "h": 108.3, "ax": 118.1}, "cheavy": {"w": 296.0, "h": 96.3, "ax": 93.8}, "jlight": {"w": 231.7, "h": 150.0, "ax": 114.5}, "jheavy": {"w": 167.7, "h": 140.0, "ax": 40.4}}, "f1": {"idle": {"w": 99.0, "h": 153.3, "ax": 48.3}, "walk": {"w": 113.3, "h": 146.3, "ax": 55.1}, "jump": {"w": 129.7, "h": 113.0, "ax": 68.2}, "crouch": {"w": 67.3, "h": 118.0, "ax": 35.0}, "guard": {"w": 108.7, "h": 150.3, "ax": 53.6}, "cguard": {"w": 83.7, "h": 126.3, "ax": 45.5}, "light": {"w": 148.0, "h": 146.7, "ax": 64.5}, "heavy": {"w": 142.7, "h": 154.7, "ax": 42.1}, "sp1": {"w": 144.3, "h": 153.0, "ax": 57.9}, "sp2": {"w": 201.7, "h": 146.0, "ax": 89.3}, "super": {"w": 133.0, "h": 163.7, "ax": 62.3}, "hit": {"w": 130.3, "h": 147.7, "ax": 71.3}, "stun": {"w": 29.3, "h": 157.7, "ax": 14.3}, "win": {"w": 50.0, "h": 157.7, "ax": 18.7}, "ko": {"w": 160.0, "h": 32.7, "ax": 79.1}, "walk2": {"w": 68.3, "h": 146.3, "ax": 30.3}, "light2": {"w": 141.3, "h": 150.0, "ax": 79.9}, "light3": {"w": 195.7, "h": 140.0, "ax": 94.8}, "clight": {"w": 134.7, "h": 120.0, "ax": 43.1}, "cheavy": {"w": 191.0, "h": 108.0, "ax": 51.5}, "jlight": {"w": 141.3, "h": 112.0, "ax": 64.3}, "jheavy": {"w": 101.7, "h": 122.0, "ax": 43.8}}, "cs": {"run": {"w": 139.3, "h": 141.3, "ax": 72.3}, "atk": {"w": 166.7, "h": 131.7, "ax": 88.2}}};
+const SPRITE_META = {"s4": {"idle": {"w": 119.3, "h": 150.0, "ax": 61.4}, "walk": {"w": 103.0, "h": 150.3, "ax": 47.3}, "jump": {"w": 111.0, "h": 119.0, "ax": 58.1}, "crouch": {"w": 99.3, "h": 113.3, "ax": 49.0}, "guard": {"w": 117.3, "h": 148.3, "ax": 63.2}, "cguard": {"w": 86.0, "h": 119.3, "ax": 47.3}, "light": {"w": 234.0, "h": 131.3, "ax": 84.4}, "heavy": {"w": 229.0, "h": 132.7, "ax": 88.4}, "sp1": {"w": 101.3, "h": 150.7, "ax": 46.1}, "sp2": {"w": 136.3, "h": 150.0, "ax": 54.0}, "hit": {"w": 117.7, "h": 145.3, "ax": 53.5}, "stun": {"w": 32.0, "h": 157.7, "ax": 15.1}, "win": {"w": 107.0, "h": 157.7, "ax": 40.6}, "super": {"w": 240.7, "h": 113.7, "ax": 105.1}, "walk2": {"w": 83.0, "h": 150.3, "ax": 41.8}, "ko": {"w": 160.0, "h": 33.3, "ax": 80.8}, "light2": {"w": 244.7, "h": 142.0, "ax": 89.9}, "light3": {"w": 272.3, "h": 128.3, "ax": 112.0}, "clight": {"w": 272.0, "h": 108.3, "ax": 118.1}, "cheavy": {"w": 296.0, "h": 96.3, "ax": 93.8}, "jlight": {"w": 231.7, "h": 150.0, "ax": 114.5}, "jheavy": {"w": 167.7, "h": 140.0, "ax": 40.4}}, "f1": {"idle": {"w": 99.0, "h": 153.3, "ax": 48.3}, "walk": {"w": 113.3, "h": 146.3, "ax": 55.1}, "jump": {"w": 129.7, "h": 113.0, "ax": 68.2}, "crouch": {"w": 67.3, "h": 118.0, "ax": 35.0}, "guard": {"w": 108.7, "h": 150.3, "ax": 53.6}, "cguard": {"w": 83.7, "h": 126.3, "ax": 45.5}, "light": {"w": 148.0, "h": 146.7, "ax": 64.5}, "heavy": {"w": 142.7, "h": 154.7, "ax": 42.1}, "sp1": {"w": 144.3, "h": 153.0, "ax": 57.9}, "sp2": {"w": 201.7, "h": 146.0, "ax": 89.3}, "super": {"w": 133.0, "h": 163.7, "ax": 62.3}, "hit": {"w": 130.3, "h": 147.7, "ax": 71.3}, "stun": {"w": 29.3, "h": 157.7, "ax": 14.3}, "win": {"w": 50.0, "h": 157.7, "ax": 18.7}, "ko": {"w": 160.0, "h": 32.7, "ax": 79.1}, "walk2": {"w": 68.3, "h": 146.3, "ax": 30.3}, "light2": {"w": 141.3, "h": 150.0, "ax": 79.9}, "light3": {"w": 195.7, "h": 140.0, "ax": 94.8}, "clight": {"w": 134.7, "h": 120.0, "ax": 43.1}, "cheavy": {"w": 191.0, "h": 108.0, "ax": 51.5}, "jlight": {"w": 141.3, "h": 112.0, "ax": 64.3}, "jheavy": {"w": 101.7, "h": 122.0, "ax": 43.8}}, "cs": {"run": {"w": 139.3, "h": 141.3, "ax": 72.3}, "atk": {"w": 166.7, "h": 131.7, "ax": 88.2}}, "ka": {"idle": {"w": 139.3, "h": 150.0, "ax": 61.6}, "walk": {"w": 126.7, "h": 150.0, "ax": 57.4}, "walk2": {"w": 104.7, "h": 150.0, "ax": 45.6}, "jump": {"w": 102.3, "h": 128.0, "ax": 41.0}, "crouch": {"w": 128.0, "h": 105.0, "ax": 46.1}, "light": {"w": 172.0, "h": 140.0, "ax": 57.3}, "light2": {"w": 176.7, "h": 138.0, "ax": 61.7}, "light3": {"w": 223.0, "h": 120.0, "ax": 85.5}, "heavy": {"w": 153.3, "h": 140.0, "ax": 76.9}, "clight": {"w": 189.0, "h": 100.0, "ax": 87.6}, "cheavy": {"w": 176.3, "h": 105.0, "ax": 67.8}, "jlight": {"w": 132.3, "h": 110.0, "ax": 59.1}, "jheavy": {"w": 163.3, "h": 112.0, "ax": 78.6}, "sp1": {"w": 136.3, "h": 150.0, "ax": 55.1}, "sp2": {"w": 133.7, "h": 135.0, "ax": 57.8}, "super": {"w": 128.0, "h": 165.0, "ax": 60.9}, "hit": {"w": 113.3, "h": 128.0, "ax": 51.6}, "stun": {"w": 53.0, "h": 158.0, "ax": 25.2}, "ko": {"w": 170.0, "h": 52.0, "ax": 85.0}, "win": {"w": 80.0, "h": 158.0, "ax": 46.3}}};
 const SPR = {};
 for (const key in SPRITE_META) {
   SPR[key] = { img: {}, tint: {} };
@@ -271,6 +328,7 @@ function tinted(key, pose, color) {
   const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
   return (cache[k] = c);
 }
+const spgImg = new Image(); spgImg.src = 'assets/ka_spg.webp';
 const bgImg = new Image(); bgImg.src = 'assets/bg_room.png';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -491,6 +549,7 @@ function runMove(f, o) {
   const mv = f.mv, total = mv.su + (mv.ac || 1) + mv.re;
   if (f.ground) f.vx *= 0.7;
   if (mv.kind === 'rush' && !f.rushStop && f.t >= mv.su && f.t < mv.su + mv.ac) f.vx = mv.speed * f.face;
+  if (mv.burst && f.t > mv.su && (f.t - mv.su) % mv.every === 0 && (f.t - mv.su) / mv.every < mv.burst) fire(f, o, mv);   // follow-up rounds
   if (f.t === mv.su) { fire(f, o, mv); squash(f, 1.16, 0.9); if (mv.step && f.ground) f.vx = mv.step * K * f.face;
     if (mv.dive && !f.ground) { f.vy = Math.max(f.vy, mv.dive); f.vx = mv.diveX * f.face; squash(f, 0.85, 1.2); } }  // dive diagonally forward
   if (f.t >= total) { f.st = f.ground ? 'idle' : 'jump'; f.t = 0; f.mv = null; f.mk = null; }
@@ -499,8 +558,14 @@ function runMove(f, o) {
 function fire(f, o, mv) {
   if (mv.kind === 'proj') {
     const p = mv.proj;
-    G.proj.push({ owner: f, tgt: o, x: f.x + f.face * 50 * K, y: f.y - p.hy * K, vx: p.vx * f.face, dir: f.face, p,
-                  w: textW(p.text, p.size * K), h: p.size * K + 2, life: 240, passed: false, done: false });
+    if (p.fall) {   // artillery: lands where the opponent is now, after a warning marker
+      G.proj.push({ owner: f, tgt: o, x: o.x, y: -40, vx: 0, wait: p.warn, dir: f.face, p, w: 18, h: 30, life: 240, passed: true, done: false });
+      fx('muzzle', f.x + f.face * 52 * K, f.y - 152 * K, { up: true, dir: f.face });
+      return;
+    }
+    G.proj.push({ owner: f, tgt: o, x: f.x + f.face * (p.mx || 50) * K, y: f.y - p.hy * K, vx: p.vx * f.face, dir: f.face, p,
+                  w: p.w ? p.w * K : textW(p.text, p.size * K), h: p.h ? p.h * K : p.size * K + 2, life: 240, passed: false, done: false });
+    if (mv.gun) fx('muzzle', f.x + f.face * ((p.mx || 50) + 8) * K, f.y - p.hy * K, { dir: f.face });
   } else if (mv.kind === 'shout') {
     shout(f, o, mv.radius, { dmg: mv.dmg, stun: mv.stun });
   } else if (mv.kind === 'super') {
@@ -565,11 +630,17 @@ function melee(f, o) {
     const last = f.hits >= (mv.hits || 1);
     tryHit(f, o, { dmg: mv.dmg, hs: mv.hs, push: last && mv.lastPush ? mv.lastPush : mv.push, stop: mv.stop, lvl: mv.lvl || 'mid', counter: mv.counter, srcX: f.x, py: hy,
                    grab: mv.kind === 'grab', unblock: mv.kind === 'grab' });
+    if (mv.dizzy && o.st === 'hitstun') popup(o, '휘청!', '#ffcf5a');
+    if (mv.toss && o.st !== 'ko') {   // land behind the thrower, flying away from them
+      o.x = Math.max(36, Math.min(W - 36, f.x - f.face * 70 * K));
+      Object.assign(o, { vx: -f.face * 5, vy: -9, ground: false });
+    }
   }
 }
 
 function updateProj() {
   for (const p of G.proj) {
+    if (p.p.fall) { fallShell(p); continue; }
     p.x += p.vx; p.life--;
     const o = p.tgt;
     if (overlap({ x: p.x - p.w / 2, y: p.y - p.h / 2, w: p.w, h: p.h }, hurt(o))) {
@@ -580,6 +651,17 @@ function updateProj() {
     }
   }
   G.proj = G.proj.filter(p => !p.done && p.life > 0 && p.x > -300 && p.x < W + 300);
+}
+
+function fallShell(p) {
+  if (p.wait > 0) { p.wait--; return; }
+  p.y += p.p.vy;
+  if (p.y < GROUND - 10) return;
+  p.done = true;
+  const o = p.tgt, q = p.p;
+  fx('boom', p.x, GROUND - 20, { life: 22 }); shake(6);
+  if (Math.abs(o.x - p.x) < q.radius * K && GROUND - o.y < 90 * K)   // a high jump clears the blast
+    tryHit(p.owner, o, { ...q, srcX: p.owner.x, py: GROUND - 60 * K });   // guard: hold away from the shooter
 }
 
 function updateSum() {
@@ -729,7 +811,9 @@ function spritePose(s) {
   return 'idle';
 }
 function drawSprite(s, o) {
-  const pose = spritePose(s), m = SPRITE_META[s.key][pose];
+  let pose = spritePose(s);
+  if (!sprite(s.key, pose)) pose = { guard: 'idle', cguard: 'crouch', land: 'crouch' }[pose] || 'idle';   // pose not drawn yet
+  const m = SPRITE_META[s.key][pose];
   const img = o.ghost ? tinted(s.key, pose, o.ghost) : SPR[s.key].img[pose];
   if (!img || (!o.ghost && !ready(img))) return false;
   ctx.save();
@@ -814,9 +898,13 @@ function drawFighter(s, o = {}) {
     if (p === 'call') { bkA = [15, headY + 2]; prop = 'phoneEar'; fr = phase === 'su' ? [16, top + 14] : [52, top + 4]; }
     if (p === 'callUp') { fr = [12, headY - 38]; bkA = [-10, hipY - 6]; prop = 'phoneUp'; }
     if (p === 'shout') { bkA = [17, headY + 7]; fr = [14, hipY - 2]; blade = [44, -10]; prop = 'mouth'; }
+    if (p === 'aim') { fr = [30, top + 16]; bkA = [8, top + 20]; blade = [92, top + 14]; }
+    if (p === 'aimUp') { fr = [22, top + 2]; bkA = [6, top + 16]; blade = [52, top - 56]; }
+    if (p === 'butt') { fr = phase === 'su' ? [-10, top + 14] : [30, top + 8]; bkA = [8, top + 18]; blade = phase === 'su' ? [-40, top + 40] : [-30, top + 40]; }   // stock swings forward, bayonet trails behind
     if (p === 'throw') { bkA = phase === 'su' ? [-18, top] : [48, -84]; }
   }
   if (c.sword && !blade) blade = [fr[0] + 6, fr[1] - 64];
+  if (c.rifle && !blade) blade = [fr[0] + 46, fr[1] - 34];   // port arms
 
   limb(sh[0] - 4, sh[1], bkA[0], bkA[1], col(shade(c.body)), 10);
   if (!ghost) { ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(bkA[0], bkA[1], 5, 0, 7); ctx.fill(); }
@@ -855,6 +943,11 @@ function drawFighter(s, o = {}) {
       ctx.rotate(Math.atan2(blade[1] - fr[1], blade[0] - fr[0]) + Math.PI / 2);
       ctx.fillStyle = c.trim; ctx.fillRect(-7, -2, 14, 4); ctx.restore();
     }
+  }
+  if (c.rifle && blade) {   // K2 + bayonet: stock behind the hand, barrel and blade ahead along the aim line
+    const dx = blade[0] - fr[0], dy = blade[1] - fr[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+    line([fr[0] - ux * 30, fr[1] - uy * 30, fr[0] + ux * 40, fr[1] + uy * 40], col('#24271f'), 7);
+    line([fr[0] + ux * 40, fr[1] + uy * 40, fr[0] + ux * 62, fr[1] + uy * 62], col('#dfe5ee'), 3);
   }
   if (!ghost) {
     ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(fr[0], fr[1], 5.5, 0, 7); ctx.fill();
@@ -932,6 +1025,29 @@ function counselorLabel(s) {
 
 function drawProj(p) {
   const q = p.p;
+  if (q.shape === 'bullet') {
+    ctx.save(); ctx.translate(p.x, p.y);
+    ctx.strokeStyle = 'rgba(255,220,140,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-p.dir * 8, 0); ctx.lineTo(-p.dir * 46, 0); ctx.stroke();
+    ctx.fillStyle = '#e8c36a'; rr(-8, -3.5, 16, 7, 3); ctx.fill();
+    ctx.restore(); return;
+  }
+  if (q.shape === 'shell') {
+    if (p.y < GROUND - 10) {   // target marker on the floor, blinking faster as the shell nears
+      const blink = p.y > 0 || Math.floor(tick / 6) % 2;
+      ctx.save(); ctx.globalAlpha = blink ? 0.9 : 0.35; ctx.strokeStyle = '#ff4d3d'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(p.x, GROUND - 2, q.radius * K, 10, 0, 0, 7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - 12, GROUND - 2); ctx.lineTo(p.x + 12, GROUND - 2); ctx.stroke();
+      ctx.restore();
+    }
+    if (p.y > -30) {
+      ctx.save(); ctx.translate(p.x, p.y);
+      ctx.fillStyle = '#3f4a33'; rr(-9, -26, 18, 34, 8); ctx.fill();
+      ctx.fillStyle = '#b8a25a'; ctx.fillRect(-9, -2, 18, 4);
+      ctx.fillStyle = '#2a2f24'; ctx.beginPath(); ctx.moveTo(-9, -24); ctx.lineTo(-14, -36); ctx.lineTo(14, -36); ctx.lineTo(9, -24); ctx.fill();
+      ctx.restore();
+    }
+    return;
+  }
   ctx.save();
   ctx.translate(p.x, p.y);
   if (q.drain) ctx.rotate(Math.sin(p.life * 0.4) * 0.15);
@@ -960,6 +1076,16 @@ function drawFx() {
     } else if (e.k === 'ring') {
       ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#f0b545'; ctx.lineWidth = 8 * (1 - k) + 1;
       ctx.beginPath(); ctx.arc(e.x, e.y, Math.max(1, Math.min(e.r, 620) * Math.sqrt(k)), 0, Math.PI * 2); ctx.stroke();
+    } else if (e.k === 'muzzle') {
+      ctx.translate(e.x, e.y); if (e.up) ctx.rotate(-Math.PI / 2 * (e.dir || 1)); else ctx.scale(e.dir || 1, 1);
+      ctx.globalAlpha = 1 - k; ctx.fillStyle = '#ffd84a';
+      ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(26, 0); ctx.lineTo(0, 6); ctx.lineTo(8, 0); ctx.fill();
+      ctx.fillStyle = '#fff6c2'; ctx.beginPath(); ctx.arc(4, 0, 5, 0, 7); ctx.fill();
+    } else if (e.k === 'boom') {
+      ctx.translate(e.x, e.y); ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = '#ff8a3d'; ctx.beginPath(); ctx.arc(0, 0, 30 + 60 * k, 0, 7); ctx.fill();
+      ctx.fillStyle = '#ffe08a'; ctx.beginPath(); ctx.arc(0, 4, 18 + 30 * k, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(60,60,60,.7)'; ctx.beginPath(); ctx.arc(-20, -30 - 30 * k, 16 + 20 * k, 0, 7); ctx.arc(22, -26 - 34 * k, 14 + 18 * k, 0, 7); ctx.fill();
     } else if (e.k === 'text') {
       ctx.globalAlpha = k > 0.6 ? (1 - k) / 0.4 : 1;
       ctx.font = `${e.size || 20}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1031,7 +1157,7 @@ function drawBanner() {
   if (G.phase === 'match') {
     const w = G.p.findIndex(f => f.wins >= 2);
     banner((w + 1) + 'P 승리!', P_COL[w], 80);
-    banner(NET.role === 'guest' ? '방장이 다시 시작할 수 있어요' : '다시 하기 버튼을 누르세요', '#ffffff', 22, 300);
+    banner('잠시 후 캐릭터 선택으로 넘어가요', '#ffffff', 22, 300);
   }
 }
 function drawFlash() {
@@ -1057,6 +1183,37 @@ function drawFocusHint() {
   ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(msg, W / 2, H - 76);
 }
 
+// 포병 화력지원: a self-propelled gun rises out of the floor behind the shooter, then sinks back
+function spgRise(f) {
+  if (G.flash && G.flash.who === f && f.mv && f.mv.spg) return Math.min(1, (42 - G.flash.t) / 20);
+  if (f.st !== 'attack' || f.mk !== 'su' || !f.mv || !f.mv.spg) return 0;
+  const end = f.mv.su + f.mv.ac + f.mv.re;
+  return Math.max(0, Math.min(1, (end - f.t) / 14));
+}
+function drawSPG(f) {
+  const r = spgRise(f);
+  if (r <= 0) return;
+  const ease = 1 - (1 - r) * (1 - r), hgt = 150;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, GROUND); ctx.clip();          // emerges from the floor
+  ctx.translate(f.x - f.face * 150, GROUND + (1 - ease) * hgt);
+  if (ready(spgImg)) {   // ChatGPT art: 175 tall, barrel already pointing forward-up
+    const h = 175 * 1.3, w = h * spgImg.naturalWidth / spgImg.naturalHeight;
+    ctx.scale(f.face, 1); ctx.drawImage(spgImg, -w / 2, -h, w, h); ctx.restore(); return;
+  }
+  ctx.scale(f.face * 1.15, 1.15);
+  ctx.globalAlpha = 0.95;
+  ctx.fillStyle = '#20251b'; rr(-120, -34, 220, 34, 14); ctx.fill();                    // tracks
+  ctx.fillStyle = '#3a3f33'; for (let k = 0; k < 6; k++) { ctx.beginPath(); ctx.arc(-98 + k * 36, -17, 11, 0, 7); ctx.fill(); }
+  ctx.fillStyle = '#56623f'; rr(-128, -70, 236, 40, 6); ctx.fill();                      // hull
+  ctx.fillStyle = '#4a5536'; rr(-80, -118, 140, 52, 10); ctx.fill();                     // turret
+  ctx.save(); ctx.translate(40, -100); ctx.rotate(-0.85);                                // barrel aimed up toward the opponent
+  ctx.fillStyle = '#3b4430'; ctx.fillRect(0, -7, 190, 14); ctx.fillStyle = '#2b3224'; ctx.fillRect(170, -10, 24, 20);
+  ctx.restore();
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(-128, -38, 236, 6);
+  ctx.restore();
+}
+
 function render() {
   watchSounds();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1066,6 +1223,7 @@ function render() {
   drawStage();
   for (const f of G.p) f.trail.forEach((s, k) => drawFighter(s, { ghost: P_COL[f.i], alpha: 0.1 + 0.06 * k }));
   for (const s of G.sum) drawCounselor(s);
+  for (const f of G.p) drawSPG(f);
   const order = G.p[0].st === 'attack' ? [1, 0] : [0, 1];
   for (const i of order) drawFighter(G.p[i]);
   for (const p of G.proj) drawProj(p);
@@ -1127,18 +1285,150 @@ function fitCanvas() {
 }
 new ResizeObserver(fitCanvas).observe(arenaBox); fitCanvas();
 
-// ---------- online: direct phone-to-phone (WebRTC via PeerJS) ----------
-// PeerJS's free cloud server only introduces the two phones; game data then flows between them
-// (or through PeerJS's public TURN relay when a network blocks direct links).
-// Host simulates and sends the whole game state ~30/s; guest sends its input:
-// held directions as bits + running press counters, so a lost packet never loses a press.
+// ---------- online: direct phone-to-phone (WebRTC via PeerJS) + accounts/ranks ----------
+// PeerJS's free cloud server only introduces the two phones; game data then flows between them.
+// Host simulates and sends the game state ~30/s; guest sends held directions + running press counters.
+// Flow: login → menu (make/join room, or practice) → character select (both ready) → match → select again …
+// ---------- accounts & ranks (Firebase Auth + Firestore over plain REST, no SDK) ----------
+// Fill these two from Firebase console > Project settings > Your apps > Web app (firebaseConfig).
+const FB = { apiKey: 'AIzaSyB8KLniqoyxjkuj9dopAC_ZfcyFs9ooWYM', projectId: 'cadet-fight' };
+const FB_ON = !FB.apiKey.startsWith('__') && !FB.projectId.startsWith('__');
+const TIERS = ['생도', '소위', '중위', '대위', '소령', '중령', '대령', '준장', '소장', '대장'];
+const TOP = TIERS.length - 1;
+
+// One match result → my new record. opp only needs { tier }.
+// Same tier ±8. Different tier: higher wins +3 / loses −7, lower wins +10 / loses −5.
+// 100 points → promotion series (best of 3, points frozen): 2 wins = next tier at 0, 2 losses = back to 90.
+// Losing twice in a row while at 0 points → previous tier at 90.
+function rateMatch(me, opp, won) {
+  const r = { ...me };
+  if (won) r.wins = (r.wins || 0) + 1; else r.losses = (r.losses || 0) + 1;
+  if (r.promo) {
+    if (won) r.pw++; else r.pl++;
+    if (r.pw >= 2) Object.assign(r, { tier: Math.min(TOP, r.tier + 1), pts: 0, promo: false, pw: 0, pl: 0, zl: 0 });
+    else if (r.pl >= 2) Object.assign(r, { pts: 90, promo: false, pw: 0, pl: 0 });
+    return r;
+  }
+  const d = me.tier === opp.tier ? (won ? 8 : -8) : me.tier > opp.tier ? (won ? 3 : -7) : (won ? 10 : -5);
+  if (won) {
+    r.zl = 0;
+    r.pts += d;
+    if (r.pts >= 100 && r.tier < TOP) Object.assign(r, { pts: 100, promo: true, pw: 0, pl: 0 });
+  } else if (me.pts <= 0) {
+    r.zl = (r.zl || 0) + 1;
+    if (r.zl >= 2 && r.tier > 0) Object.assign(r, { tier: r.tier - 1, pts: 90, zl: 0 });
+  } else {
+    r.pts = Math.max(0, r.pts + d);
+    r.zl = 0;
+  }
+  return r;
+}
+const rankText = p => TIERS[p.tier] + (p.promo ? ` 승급전 ${p.pw}승 ${p.pl}패` : ` ${p.pts}점`);
+function changeText(before, after) {
+  if (after.tier > before.tier) return `${TIERS[after.tier]} 진급!`;
+  if (after.tier < before.tier) return `${TIERS[after.tier]}(으)로 강등`;
+  if (after.promo && !before.promo) return '승급전 시작! (3판 중 2승)';
+  if (before.promo && !after.promo) return '승급전 실패 · 90점';
+  if (after.promo) return `승급전 ${after.pw}승 ${after.pl}패`;
+  const d = after.pts - before.pts;
+  return `${TIERS[after.tier]} ${after.pts}점 (${d >= 0 ? '+' : ''}${d})` + (after.zl && after.tier > 0 ? ' · 0점에서 한 번 더 지면 강등' : '');
+}
+
+// --- Firebase REST ---
+const ACC = { uid: '', idToken: '', refresh: '', exp: 0, me: null };
+const nickEmail = nick => 'n' + Array.from(new TextEncoder().encode(nick), b => b.toString(16).padStart(2, '0')).join('') + '@cadet-fight.app';
+const DOC = uid => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/users/${uid}`;
+const FIELDS = { nick: 's', tier: 'i', pts: 'i', promo: 'b', pw: 'i', pl: 'i', zl: 'i', wins: 'i', losses: 'i' };
+function toFs(p) {
+  const f = {};
+  for (const k in FIELDS) f[k] = FIELDS[k] === 's' ? { stringValue: String(p[k]) } : FIELDS[k] === 'b' ? { booleanValue: !!p[k] } : { integerValue: String(p[k] | 0) };
+  return { fields: f };
+}
+function fromFs(d) {
+  const f = (d && d.fields) || {}, p = {};
+  for (const k in FIELDS) { const v = f[k] || {}; p[k] = FIELDS[k] === 's' ? String(v.stringValue || '') : FIELDS[k] === 'b' ? !!v.booleanValue : Number(v.integerValue || 0); }
+  p.tier = Math.max(0, Math.min(TOP, p.tier));
+  return p;
+}
+const AUTH_ERR = {
+  EMAIL_EXISTS: '이미 있는 닉네임이에요.', INVALID_LOGIN_CREDENTIALS: '닉네임 또는 비밀번호가 틀렸어요.',
+  INVALID_PASSWORD: '닉네임 또는 비밀번호가 틀렸어요.', EMAIL_NOT_FOUND: '닉네임 또는 비밀번호가 틀렸어요.',
+  TOO_MANY_ATTEMPTS_TRY_LATER: '시도가 너무 많아요. 잠시 후 다시 해주세요.', USER_DISABLED: '사용할 수 없는 계정이에요.'
+};
+async function fbPost(url, body, form) {
+  const r = await fetch(url, form ? { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }
+                               : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const code = ((j.error && j.error.message) || 'ERROR').split(' ')[0]; throw new Error(AUTH_ERR[code] || (code.startsWith('WEAK_PASSWORD') ? '비밀번호는 6자 이상이어야 해요.' : '로그인 서버 오류 (' + code + ')')); }
+  return j;
+}
+function setSession(uid, idToken, refresh, expiresIn) {
+  Object.assign(ACC, { uid, idToken, refresh, exp: Date.now() + (Number(expiresIn) || 3600) * 1000 - 120000 });
+  try { localStorage.setItem('cadet-fight-auth', JSON.stringify({ uid, refresh })); } catch (_) {}
+}
+async function token() {
+  if (Date.now() < ACC.exp) return ACC.idToken;
+  const j = await fbPost('https://securetoken.googleapis.com/v1/token?key=' + FB.apiKey, 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(ACC.refresh), true);
+  setSession(j.user_id, j.id_token, j.refresh_token, j.expires_in);
+  return ACC.idToken;
+}
+async function loadMe() {
+  const r = await fetch(DOC(ACC.uid), { headers: { Authorization: 'Bearer ' + await token() } });
+  if (!r.ok) throw new Error('내 기록을 불러오지 못했어요.');
+  ACC.me = fromFs(await r.json());
+  return ACC.me;
+}
+async function saveMe(p) {
+  const mask = Object.keys(FIELDS).map(k => 'updateMask.fieldPaths=' + k).join('&');
+  const r = await fetch(DOC(ACC.uid) + '?' + mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() }, body: JSON.stringify(toFs(p)) });
+  if (!r.ok) throw new Error('기록 저장에 실패했어요.');
+  ACC.me = p;
+}
+function checkNick(nick, pw) {
+  if (!/^[가-힣A-Za-z0-9_]{2,10}$/.test(nick)) return '닉네임은 한글·영문·숫자 2~10자로 해주세요.';
+  if (pw.length < 6) return '비밀번호는 6자 이상이어야 해요.';
+  return '';
+}
+async function signUp(nick, pw) {
+  const j = await fbPost('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FB.apiKey, { email: nickEmail(nick), password: pw, returnSecureToken: true });
+  setSession(j.localId, j.idToken, j.refreshToken, j.expiresIn);
+  await saveMe({ nick, tier: 0, pts: 0, promo: false, pw: 0, pl: 0, zl: 0, wins: 0, losses: 0 });
+  return ACC.me;
+}
+async function logIn(nick, pw) {
+  const j = await fbPost('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB.apiKey, { email: nickEmail(nick), password: pw, returnSecureToken: true });
+  setSession(j.localId, j.idToken, j.refreshToken, j.expiresIn);
+  return loadMe();
+}
+async function resume() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('cadet-fight-auth') || 'null'); } catch (_) {}
+  if (!s || !s.refresh) return null;
+  ACC.refresh = s.refresh; ACC.uid = s.uid; ACC.exp = 0;
+  try { return await loadMe(); } catch (_) { logOut(); return null; }
+}
+function logOut() {
+  Object.assign(ACC, { uid: '', idToken: '', refresh: '', exp: 0, me: null });
+  try { localStorage.removeItem('cadet-fight-auth'); } catch (_) {}
+}
+async function leaderboard() {
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/users?pageSize=300`);
+  if (!r.ok) throw new Error('순위를 불러오지 못했어요.');
+  const j = await r.json();
+  return (j.documents || []).map(fromFs).filter(p => p.nick)
+    .sort((a, b) => b.tier - a.tier || (b.promo - a.promo) || b.pts - a.pts || b.wins - a.wins);
+}
+
 const NET = { role: 'solo', peer: null, conn: null, code: '', gin: { h: 0, c: [0, 0, 0, 0, 0, 0] }, gLast: [0, 0, 0, 0, 0, 0],
-              ginInit: false, sentIn: '', sentAt: 0, lastSnap: null, seq: 0, lastSeq: -1, timer: 0, bytes: 0 };
+              ginInit: false, sentIn: '', sentAt: 0, lastSnap: null, seq: 0, lastSeq: -1, timer: 0, bytes: 0,
+              stage: 'lobby', opp: null, oppAtStart: null, meAtStart: null, done: false, nextSel: 0 };
 const $ = id => document.getElementById(id);
-const lobbyEl = $('lobby'), lobbyMsg = $('lobbyMsg'), statusEl = $('status'), restartBtn = $('restart');
-const CHARS = { f1: true, s4: true };
+const lobbyEl = $('lobby'), lobbyMsg = $('lobbyMsg'), statusEl = $('status'), restartBtn = $('restart'), selEl = $('select');
+const CHARS = { f1: true, s4: true, ka: true };
 const other = k => (k === 'f1' ? 's4' : 'f1');
 const ID_PREFIX = 'cadet-fight-v1-';
+const SEL = { me: { char: 'f1', ready: false }, opp: { char: '', ready: false } };
+try { const c = localStorage.getItem('cadet-fight-char'); if (CHARS[c]) SEL.me.char = c; } catch (_) {}
 
 function inputFor(i, f, o) {
   if (i === 0) return readLocal();
@@ -1150,7 +1440,7 @@ function remoteInput() {
   NET.gLast = c.slice();
   return { l: !!(h & 1), r: !!(h & 2), u: !!(h & 4), d: !!(h & 8), lp: e[0], hp: e[1], sp: e[2], su: e[3], pl: e[4], pr: e[5] };
 }
-function restartMatch() { if (NET.role === 'guest') return; newMatch(); cv.focus(); }
+function restartMatch() { /* the character select screen starts the next match */ }
 
 // --- snapshot (host -> guest) ---
 const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
@@ -1197,45 +1487,139 @@ function send(msg) {
   if (!c || !c.open) return;
   try { c.send(msg); } catch (_) { /* channel closing */ }
 }
+const ranked = () => FB_ON && !!ACC.me && NET.role !== 'solo' && !!NET.oppAtStart && !!NET.oppAtStart.nick;
+const myProfile = () => ACC.me ? { nick: ACC.me.nick, tier: ACC.me.tier, pts: ACC.me.pts, promo: ACC.me.promo, pw: ACC.me.pw, pl: ACC.me.pl } : { nick: '' };
 
-// --- per frame: send my part ---
+// --- per frame ---
 function netFrame() {
-  restartBtn.hidden = !(G.phase === 'match' && NET.role !== 'guest');
+  restartBtn.hidden = true;
+  if (NET.stage === 'fight' && G.phase === 'match' && !NET.done) matchOver();
+  if (NET.nextSel && performance.now() > NET.nextSel) { NET.nextSel = 0; openSelect(); }
   if (!NET.conn || !NET.conn.open) return;
   if (NET.role === 'host') {
     if (G.phase !== 'fight') NET.gLast = NET.gin.c.slice();   // presses made outside the fight don't carry over
-    if (tick % 2 === 0) send({ t: 's', q: ++NET.seq, s: snapshot() });   // ~30 states a second
-  } else if (NET.role === 'guest') {
+    if (NET.stage === 'fight' && tick % 2 === 0) send({ t: 's', q: ++NET.seq, s: snapshot() });
+  } else if (NET.role === 'guest' && NET.stage === 'fight') {
     const h = heldLocal(), bits = (h.l ? 1 : 0) | (h.r ? 2 : 0) | (h.u ? 4 : 0) | (h.d ? 8 : 0);
     const inp = { h: bits, c: CK.map(k => CNT[k]) }, key = JSON.stringify(inp), now = performance.now();
-    // send on change, and re-send every 200 ms so a lost packet is repaired
     if (key !== NET.sentIn || now - NET.sentAt > 200) { NET.sentIn = key; NET.sentAt = now; send({ t: 'in', ...inp }); }
     pressed.clear();
   }
 }
 
-// --- lobby ---
-function showLobby(msg) { lobbyEl.hidden = false; if (msg != null) lobbyMsg.textContent = msg; }
+// match finished (both phones see it): rate it, then back to character select
+async function matchOver() {
+  NET.done = true;
+  const mySide = NET.role === 'guest' ? 1 : 0, w = G.p.findIndex(f => f.wins >= 2);
+  let line = w < 0 ? '무승부' : w === mySide ? '승리!' : '패배';
+  if (w >= 0 && ranked()) {
+    const before = ACC.me, after = rateMatch(before, NET.oppAtStart, w === mySide);
+    try { await saveMe(after); line += ' · ' + changeText(before, after); updateMe(); }
+    catch (e) { line += ' · ' + e.message; }
+  }
+  $('selResult').textContent = line;
+  NET.nextSel = performance.now() + 3500;
+}
+
+// --- screens ---
+function showLobby(msg) { closeSelect(); NET.stage = 'lobby'; lobbyEl.hidden = false; if (msg != null) lobbyMsg.textContent = msg; refreshBoard(); }
 function hideLobby() { lobbyEl.hidden = true; cv.focus(); }
 function setStatus(t) { statusEl.textContent = t; }
-for (const b of document.querySelectorAll('.pick')) b.addEventListener('click', () => {
-  PICK.me = b.dataset.c;
-  for (const x of document.querySelectorAll('.pick')) x.setAttribute('aria-pressed', String(x === b));
+function updateMe() {
+  const me = ACC.me;
+  $('vLogin').hidden = !!me || !FB_ON; $('vMenu').hidden = !me && FB_ON; $('logoutRow').hidden = !me;
+  if (me) { $('meNick').textContent = me.nick; $('meRank').textContent = rankText(me); }
+  else if (!FB_ON) { $('meNick').textContent = '순위 서버 설정 전'; $('meRank').textContent = '온라인은 순위 없이 가능'; }
+  const canNet = typeof window.Peer === 'function' && (!!me || !FB_ON);
+  $('create').disabled = $('join').disabled = !canNet;
+}
+async function refreshBoard() {
+  const body = $('boardBody');
+  if (!FB_ON) { body.innerHTML = '<tr><td colspan="4">순위 서버가 아직 설정되지 않았어요.</td></tr>'; return; }
+  try {
+    const list = await leaderboard();
+    body.textContent = '';
+    if (!list.length) body.innerHTML = '<tr><td colspan="4">아직 아무도 없어요. 첫 번째가 되어보세요!</td></tr>';
+    list.forEach((p, k) => {
+      const tr = document.createElement('tr');
+      if (ACC.me && p.nick === ACC.me.nick) tr.className = 'mine';
+      for (const [t, c] of [[k + 1, ''], [p.nick, ''], [rankText(p), ''], [`${p.wins}승 ${p.losses}패`, 'r']]) {
+        const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td);
+      }
+      body.append(tr);
+    });
+  } catch (e) { body.innerHTML = ''; const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 4; td.textContent = e.message; tr.append(td); body.append(tr); }
+}
+
+// character select
+const charsEl = $('chars');
+for (const k of Object.keys(CHARS)) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.c = k;
+  const img = document.createElement('img'); img.src = `assets/${k}_idle.webp`; img.alt = '';
+  const sp = document.createElement('span'); sp.textContent = CH[k].name;
+  b.append(img, sp); charsEl.append(b);
+  b.addEventListener('click', () => { if (SEL.me.ready) return; SEL.me.char = k; try { localStorage.setItem('cadet-fight-char', k); } catch (_) {} drawSelect(); sendPick(); });
+}
+function drawSelect() {
+  for (const b of charsEl.children) { b.setAttribute('aria-pressed', String(b.dataset.c === SEL.me.char)); b.disabled = SEL.me.ready && b.dataset.c !== SEL.me.char; }
+  $('ready').textContent = SEL.me.ready ? '준비 취소' : '준비 완료';
+  let o;
+  if (NET.role === 'solo') o = '상대: 허수아비 (' + CH[other(SEL.me.char)].name + ')';
+  else if (!NET.opp) o = '상대를 기다리는 중…';
+  else o = `상대: ${NET.opp.nick || '손님'}${NET.opp.nick && FB_ON ? ' · ' + rankText(NET.opp) : ''} — ${SEL.opp.ready ? CH[SEL.opp.char].name + ' 준비 완료' : '고르는 중…'}`;
+  $('selOpp').textContent = o;
+}
+function openSelect() {
+  NET.stage = 'select'; SEL.me.ready = false;
+  lobbyEl.hidden = true; selEl.hidden = false; drawSelect(); sendPick();
+}
+function closeSelect() { selEl.hidden = true; }
+function sendPick() { if (NET.role !== 'solo') send({ t: 'pick', char: SEL.me.char, ready: SEL.me.ready, prof: myProfile() }); }
+$('ready').addEventListener('click', () => {
+  SEL.me.ready = !SEL.me.ready; drawSelect(); sendPick();
+  if (NET.role === 'solo' && SEL.me.ready) { PICK.p1 = SEL.me.char; PICK.p2 = other(SEL.me.char); startFight(); }
+  else if (NET.role === 'host') maybeStart();
 });
-$('menu').addEventListener('click', () => { leaveRoom(); newMatch(); showLobby(''); setStatus('혼자 연습'); });
-$('solo').addEventListener('click', () => {
-  leaveRoom(); PICK.p1 = PICK.me; PICK.p2 = other(PICK.me); newMatch();
-  setStatus('혼자 연습 · 상대는 허수아비'); hideLobby();
-});
+$('selLeave').addEventListener('click', () => { leaveRoom(); newMatch(); showLobby(''); setStatus('메뉴'); });
+function maybeStart() {
+  if (!(SEL.me.ready && SEL.opp.ready && NET.conn && NET.conn.open)) return;
+  PICK.p1 = SEL.me.char; PICK.p2 = SEL.opp.char;
+  send({ t: 'go', p1: PICK.p1, p2: PICK.p2 });
+  startFight();
+}
+function startFight() {
+  NET.oppAtStart = NET.opp ? { ...NET.opp } : null; NET.done = false; NET.nextSel = 0;
+  SEL.me.ready = SEL.opp.ready = false;
+  $('selResult').textContent = '';
+  newMatch();   // guest too: clears the last match locally until the host's states arrive
+  closeSelect(); hideLobby(); NET.stage = 'fight';
+  setStatus(NET.role === 'solo' ? '혼자 연습' : `방 ${NET.code.toUpperCase()} · vs ${NET.opp && NET.opp.nick || '상대'}`);
+}
+
+// lobby buttons
+$('menu').addEventListener('click', () => { leaveRoom(); newMatch(); showLobby(''); setStatus('메뉴'); });
+$('solo').addEventListener('click', () => { leaveRoom(); NET.role = 'solo'; NET.opp = null; openSelect(); setStatus('혼자 연습'); });
+async function doAuth(fn) {
+  const nick = $('nick').value.trim(), pw = $('pw').value, bad = checkNick(nick, pw);
+  if (bad) { lobbyMsg.textContent = bad; return; }
+  $('login').disabled = $('signup').disabled = true; lobbyMsg.textContent = '확인 중…';
+  try { await fn(nick, pw); $('pw').value = ''; lobbyMsg.textContent = ''; updateMe(); refreshBoard(); }
+  catch (e) { lobbyMsg.textContent = e.message; }
+  $('login').disabled = $('signup').disabled = false;
+}
+$('login').addEventListener('click', () => doAuth(logIn));
+$('signup').addEventListener('click', () => doAuth(signUp));
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(logIn); });
+$('logout').addEventListener('click', () => { leaveRoom(); logOut(); updateMe(); refreshBoard(); lobbyMsg.textContent = '로그아웃했어요.'; });
+
 function leaveRoom() {
   clearTimeout(NET.timer);
   if (NET.conn) { try { NET.conn.close(); } catch (_) {} }
   if (NET.peer) { try { NET.peer.destroy(); } catch (_) {} }
-  Object.assign(NET, { role: 'solo', peer: null, conn: null, code: '', lastSnap: null, sentIn: '', seq: 0, lastSeq: -1 });
+  Object.assign(NET, { role: 'solo', peer: null, conn: null, code: '', lastSnap: null, sentIn: '', seq: 0, lastSeq: -1, opp: null, nextSel: 0, done: true });
+  closeSelect();
 }
-const hasPeer = typeof window.Peer === 'function';
-$('create').disabled = $('join').disabled = !hasPeer;
-lobbyMsg.textContent = hasPeer ? '' : '온라인 모듈을 불러오지 못했어요. 파일 구성(assets/peerjs.min.js)을 확인해주세요. 혼자 연습은 가능해요.';
 
 const ERR = {
   'peer-unavailable': '그 코드의 방이 없어요. 코드를 다시 확인하거나, 방장이 방을 다시 만들어주세요.',
@@ -1247,6 +1631,7 @@ const ERR = {
   'webrtc': '휴대폰끼리 연결하지 못했어요. 한 명이 와이파이↔데이터를 바꿔서 다시 해보세요.'
 };
 const errText = e => ERR[e && e.type] || ('연결 오류 (' + (e && e.type || '알 수 없음') + ')');
+const cleanProf = p => (p && typeof p === 'object') ? { nick: String(p.nick || '').slice(0, 10), tier: Math.max(0, Math.min(TOP, p.tier | 0)), pts: p.pts | 0, promo: !!p.promo, pw: p.pw | 0, pl: p.pl | 0 } : { nick: '' };
 
 // host: open a peer named after the room code and wait for one guest
 function createRoom(attempt = 0) {
@@ -1254,11 +1639,10 @@ function createRoom(attempt = 0) {
   const code = Array.from({ length: 4 }, () => 'abcdefghjkmnpqrstuvwxyz23456789'[Math.random() * 31 | 0]).join('');
   const peer = new Peer(ID_PREFIX + code);
   Object.assign(NET, { role: 'host', peer, code });
-  PICK.p1 = PICK.me; PICK.p2 = other(PICK.me); newMatch();
   lobbyMsg.textContent = '방을 여는 중…';
   peer.on('open', () => {
     lobbyMsg.innerHTML = '';
-    lobbyMsg.append('방 코드 ', Object.assign(document.createElement('strong'), { textContent: code.toUpperCase() }), ' · 상대가 이 코드를 입력하면 시작돼요');
+    lobbyMsg.append('방 코드 ', Object.assign(document.createElement('strong'), { textContent: code.toUpperCase() }), ' · 상대가 이 코드를 입력하면 캐릭터 선택으로 넘어가요');
     setStatus('방 ' + code.toUpperCase() + ' · 상대 기다리는 중');
   });
   peer.on('connection', conn => {
@@ -1270,7 +1654,7 @@ function createRoom(attempt = 0) {
     conn.on('data', onHostData);
     conn.on('close', () => {
       if (NET.conn !== conn) return;
-      NET.conn = null; newMatch();
+      NET.conn = null; NET.opp = null; newMatch();
       showLobby('상대가 나갔어요. 같은 코드 ' + NET.code.toUpperCase() + '로 다시 들어올 수 있어요.');
       setStatus('방 ' + NET.code.toUpperCase() + ' · 상대 기다리는 중');
     });
@@ -1284,10 +1668,15 @@ function onHostData(m) {
   if (!m || typeof m !== 'object') return;
   NET.bytes += JSON.stringify(m).length;
   if (m.t === 'hello' && NET.conn) {
-    PICK.p2 = CHARS[m.char] ? m.char : other(PICK.p1);
+    NET.opp = cleanProf(m.prof);
     NET.gin = { h: 0, c: [0, 0, 0, 0, 0, 0] }; NET.gLast = [0, 0, 0, 0, 0, 0]; NET.ginInit = false;
-    newMatch(); hideLobby();
-    setStatus('방 ' + NET.code.toUpperCase() + ' · 대전 중 · 나는 1P(왼쪽)');
+    send({ t: 'hello', prof: myProfile() });
+    newMatch(); openSelect();
+    setStatus('방 ' + NET.code.toUpperCase() + ' · 캐릭터 선택');
+  } else if (m.t === 'pick') {
+    if (CHARS[m.char]) SEL.opp.char = m.char;
+    SEL.opp.ready = !!m.ready && CHARS[m.char]; NET.opp = cleanProf(m.prof);
+    if (NET.stage === 'select') { drawSelect(); maybeStart(); }
   } else if (m.t === 'in' && Array.isArray(m.c)) {
     const c = CK.map((_, k) => Math.max(0, Math.min(1e9, Number(m.c[k]) | 0)));
     if (!NET.ginInit) { NET.gLast = c.slice(); NET.ginInit = true; }   // first input from this guest: count presses from here
@@ -1305,30 +1694,36 @@ function joinRoom() {
   lobbyMsg.textContent = '연결 중…';
   setStatus('방 ' + code.toUpperCase() + ' · 연결 중');
   NET.timer = setTimeout(() => {
-    if (NET.peer === peer && !(NET.conn && NET.conn.open)) { leaveRoom(); lobbyMsg.textContent = '15초 안에 연결되지 않았어요. ' + ERR.webrtc; setStatus('혼자 연습'); }
+    if (NET.peer === peer && !(NET.conn && NET.conn.open)) { leaveRoom(); lobbyMsg.textContent = '15초 안에 연결되지 않았어요. ' + ERR.webrtc; setStatus('메뉴'); }
   }, 15000);
   peer.on('open', () => {
     const conn = peer.connect(ID_PREFIX + code, { reliable: false, serialization: 'json' });
     NET.conn = conn;
-    conn.on('open', () => { clearTimeout(NET.timer); NET.sentIn = ''; send({ t: 'hello', char: PICK.me }); lobbyMsg.textContent = '연결됐어요. 시작을 기다리는 중…'; });
+    conn.on('open', () => { clearTimeout(NET.timer); NET.sentIn = ''; send({ t: 'hello', prof: myProfile() }); lobbyMsg.textContent = '연결됐어요…'; });
     conn.on('data', m => {
       if (!m || typeof m !== 'object') return;
       NET.bytes += JSON.stringify(m).length;
-      if (m.t === 'full') { leaveRoom(); showLobby('이미 두 명이 대전 중인 방이에요.'); setStatus('혼자 연습'); return; }
-      if (m.t === 's' && (m.q | 0) > NET.lastSeq) {                   // drop late, out-of-order states
-        NET.lastSeq = m.q | 0; applySnap(m.s);
-        if (!lobbyEl.hidden) { hideLobby(); setStatus('방 ' + code.toUpperCase() + ' · 대전 중 · 나는 2P(오른쪽)'); }
-      }
+      if (m.t === 'full') { leaveRoom(); showLobby('이미 두 명이 대전 중인 방이에요.'); setStatus('메뉴'); return; }
+      if (m.t === 'hello') { NET.opp = cleanProf(m.prof); openSelect(); setStatus('방 ' + code.toUpperCase() + ' · 캐릭터 선택'); }
+      else if (m.t === 'pick') { if (CHARS[m.char]) SEL.opp.char = m.char; SEL.opp.ready = !!m.ready; NET.opp = cleanProf(m.prof); if (NET.stage === 'select') drawSelect(); }
+      else if (m.t === 'go' && CHARS[m.p1] && CHARS[m.p2]) { PICK.p1 = m.p1; PICK.p2 = m.p2; NET.lastSeq = -1; NET.lastSnap = null; startFight(); }
+      else if (m.t === 's' && NET.stage === 'fight' && (m.q | 0) > NET.lastSeq) { NET.lastSeq = m.q | 0; applySnap(m.s); }
     });
-    conn.on('close', () => { if (NET.conn === conn) { leaveRoom(); newMatch(); showLobby('방장과 연결이 끊겼어요.'); setStatus('혼자 연습'); } });
+    conn.on('close', () => { if (NET.conn === conn) { leaveRoom(); newMatch(); showLobby('방장과 연결이 끊겼어요.'); setStatus('메뉴'); } });
   });
-  peer.on('error', e => { if (NET.peer === peer) { clearTimeout(NET.timer); leaveRoom(); lobbyMsg.textContent = errText(e); setStatus('혼자 연습'); } });
+  peer.on('error', e => { if (NET.peer === peer) { clearTimeout(NET.timer); leaveRoom(); lobbyMsg.textContent = errText(e); setStatus('메뉴'); } });
 }
 $('create').addEventListener('click', () => createRoom());
 $('code').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-z0-9]/gi, '').slice(0, 4); });
 $('code').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
 $('join').addEventListener('click', joinRoom);
 addEventListener('pagehide', leaveRoom);
+
+// start: resume a saved login, show the menu
+NET.done = true;
+updateMe(); refreshBoard(); setStatus('메뉴');
+if (typeof window.Peer !== 'function') lobbyMsg.textContent = '온라인 모듈을 불러오지 못했어요. 혼자 연습은 가능해요.';
+if (FB_ON) resume().then(me => { if (me) { updateMe(); refreshBoard(); } });
 
 // ---------- loop ----------
 newMatch();
