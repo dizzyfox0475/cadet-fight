@@ -178,10 +178,10 @@ const CH = {
     jlp: { name: '점프 킥', kind: 'melee', air: true, landLag: 8, su: 4, ac: 7, re: 6, dmg: 35, reach: 80, hy: 60, hh: 70, lvl: 'overhead', hs: 16, push: 3, stop: 4, pose: 'kick', art: 'jlight' },
     jhp: { name: '내려 펀치', kind: 'melee', air: true, dive: 13, diveX: 7, landLag: 16, counter: true, su: 5, ac: 10, re: 10, dmg: 60, reach: 62, hy: 0, hh: 80, lvl: 'overhead', hs: 22, push: 6, stop: 7, pose: 'punch', art: 'jheavy' },
     hp:  { name: '앞차기', kind: 'melee', su: 7, ac: 4, re: 11, dmg: 75, step: 6, reach: 100, hy: 95, hh: 70, hs: 22, push: 8, stop: 7, pose: 'kick' },
-    sp1: { name: '1303 국방헬프콜', kind: 'proj', cd: 180, su: 14, re: 22, pose: 'call',
-           proj: { text: '1303 국방헬프콜', size: 22, vx: 7, hy: 138, dmg: 70, lvl: 'high', unblock: true, hs: 24, push: 6, stop: 7, fill: '#ffffff', edge: '#c8392a' } },
+    sp1: { name: '메추리 출동', kind: 'proj', cd: 180, su: 14, re: 22, pose: 'call',
+           proj: { shape: 'quail', w: 46, h: 36, vx: 7, hy: 18, dmg: 70, lvl: 'low', unblock: true, hs: 24, push: 6, stop: 7 } },   // runs along the floor: jump over it
     sp2: { name: '잡아 던지기', kind: 'grab', fling: true, su: 5, ac: 3, re: 28, dmg: 70, reach: 62, hy: 75, hh: 110, hs: 48, push: 2, stop: 8, pose: 'tackle' },   // close range, beats guard; throws far forward; whiff = long recovery
-    su:  { name: '상담관 소환', kind: 'super', su: 10, re: 30, pose: 'callUp' }
+    su:  { name: '라인선배 소환', kind: 'super', su: 10, re: 30, pose: 'callUp' }
   }},
   s4: { name: '공사 4학년', body: '#24406c', trim: '#e9c04f', skin: '#e9bf98', hair: '#121214', cap: true, sword: true, moves: {
     lp:  { name: '예도 찌르기', kind: 'melee', su: 5, ac: 3, re: 13, dmg: 28, reach: 120, hy: 100, hs: 16, push: 3, stop: 4, pose: 'thrust', next: 'lp2' },
@@ -817,7 +817,7 @@ function updateProj() {
     if (overlap({ x: p.x - p.w / 2, y: p.y - p.h / 2, w: p.w, h: p.h }, hurt(o))) {
       p.done = true;
       tryHit(p.owner, o, { ...p.p, srcX: p.x - p.dir * 100, py: p.y });
-    } else if (!p.passed && (p.x - o.x) * p.dir > 30 && Math.abs(p.x - o.x) < 120 && o.crouch && o.ground) {
+    } else if (!p.passed && (p.x - o.x) * p.dir > 30 && Math.abs(p.x - o.x) < 120 && (p.p.shape === 'quail' ? !o.ground : o.crouch && o.ground)) {
       p.passed = true; popup(o, '회피!', '#7fe3a0');
     }
   }
@@ -1201,12 +1201,12 @@ function star(x, y, r) {
 }
 
 function drawCounselor(s) {
-  const pose = s.st === 'atk' ? 'atk' : 'run', m = sprite('cs', pose), im = SPR.cs && SPR.cs.img[pose];
+  const pose = s.st === 'atk' ? 'heavy' : (s.t >> 3) % 2 ? 'walk2' : 'walk', m = sprite('s4', pose), im = SPR.s4 && SPR.s4.img[pose];   // 라인선배 = 공사 4학년 그림
   if (opt.sprite && m && ready(im)) {
     ctx.save(); ctx.globalAlpha = s.a; ctx.translate(s.x, s.y);
     if (s.y >= GROUND - 1) { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(0, 0, 30 * K, 7, 0, 0, 7); ctx.fill(); }
     ctx.scale(s.face * K, K);
-    ctx.drawImage(im, -m.ax, -m.h - (s.st === 'run' ? Math.abs(Math.sin(s.t * 0.5)) * 4 : 0), m.w, m.h);
+    ctx.drawImage(im, -m.ax, -m.h, m.w, m.h);
     ctx.restore();
     counselorLabel(s); return;
   }
@@ -1239,8 +1239,8 @@ function counselorLabel(s) {
   ctx.globalAlpha = s.a;
   ctx.font = `18px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
   const y = s.y - 160 * K;
-  ctx.lineWidth = 5; ctx.strokeStyle = '#0c1120'; ctx.strokeText('상담관', s.x, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText('상담관', s.x, y);
+  ctx.lineWidth = 5; ctx.strokeStyle = '#0c1120'; ctx.strokeText('라인선배', s.x, y);
+  ctx.fillStyle = '#ffffff'; ctx.fillText('라인선배', s.x, y);
   ctx.restore();
 }
 
@@ -1253,6 +1253,22 @@ function drawProj(p) {
     ctx.restore(); return;
   }
 
+  if (q.shape === 'quail') {   // 메추리: round brown body, little head, legs scurrying
+    const t = p.life * 0.9, leg = Math.sin(t) * 7;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.scale(p.dir * K, K);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0, 12, 16, 3, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#c98a3a'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-2, 2); ctx.lineTo(-2 + leg, 12); ctx.moveTo(4, 2); ctx.lineTo(4 - leg, 12); ctx.stroke();
+    ctx.fillStyle = '#8a6440'; ctx.beginPath(); ctx.ellipse(0, -4, 15, 11, -0.15, 0, 7); ctx.fill();   // body
+    ctx.fillStyle = '#6b4a2e'; ctx.beginPath(); ctx.ellipse(-4, -6, 9, 5, -0.3, 0, 7); ctx.fill();     // wing
+    ctx.strokeStyle = '#f1e2c4'; ctx.lineWidth = 1.2; for (const x of [-9, -5, -1]) { ctx.beginPath(); ctx.moveTo(x, -9); ctx.lineTo(x + 3, -3); ctx.stroke(); }
+    ctx.fillStyle = '#8a6440'; ctx.beginPath(); ctx.arc(12, -13, 7, 0, 7); ctx.fill();                  // head
+    ctx.fillStyle = '#f1e2c4'; ctx.beginPath(); ctx.arc(14, -11, 4, 0, 7); ctx.fill();                  // cheek
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(14, -15, 1.6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3a2a1a'; ctx.beginPath(); ctx.moveTo(18, -14); ctx.lineTo(23, -12); ctx.lineTo(18, -11); ctx.fill();   // beak
+    ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, -19); ctx.quadraticCurveTo(13, -27, 17, -24); ctx.stroke();   // head plume
+    ctx.restore(); return;
+  }
   if (q.shape === 'syringe') {
     ctx.save(); ctx.translate(p.x, p.y); ctx.scale(p.dir, 1); if (p.ang) ctx.rotate(p.ang);
     ctx.fillStyle = '#dfe9f2'; rr(-16, -5, 24, 10, 3); ctx.fill(); ctx.fillStyle = '#6fe08a'; ctx.fillRect(-12, -3, 14, 6);
